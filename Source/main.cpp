@@ -1,13 +1,12 @@
 #include "main.h"
-using std::cout, std::cin, std::shared_ptr, std::unique_ptr, std::make_unique;
-
+using std::cout, std::cin;
 int main(int argc, char* argv[])
 {
 	// Initialize SDL2 & ImGui
 	Inititialize();
 
 	// Create initial scene
-	unique_ptr<Screen> currentScreen = make_unique<Sandbox>();
+  std::unique_ptr<Screen> currentScreen = std::make_unique<Sandbox>();
   Application& app = Application::GetInstance();
 
 	while(!app.done)

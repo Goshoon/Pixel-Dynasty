@@ -33,4 +33,5 @@ private:
   SDL_Point lastPosition;
   SDL_Point worldBorder;
   void Gravity(std::vector<Pixel*>& nearby);
+  void Unstuck(std::vector<Pixel*>& nearby, int limit);
 };

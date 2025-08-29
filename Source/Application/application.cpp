@@ -137,7 +137,10 @@ void Application::Input() /* Teclas e interacciones con la ventana */
 			case SDL_MOUSEBUTTONUP:
 				mbLeft = false;
 				mbRight = false;
-			break;
+			break; /*
+      case SDL_MOUSESCROLLUP
+        sscrollup = true;
+      break; */
         }
     }
 }

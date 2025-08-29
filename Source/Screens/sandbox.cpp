@@ -10,6 +10,12 @@ Color Sandbox::ReturnColorType(Behaviour behaviourType)
       returnColor.blue = 155;
       returnColor.alpha = 255;
       break;
+    case FIRE:
+      returnColor.red = 155;
+      returnColor.green = 0;
+      returnColor.blue = 0;
+      returnColor.alpha = 255;
+      break;
     case DIRT:
       returnColor.red = 67;
       returnColor.green = 40;
@@ -46,6 +52,7 @@ void Sandbox::Update()
   Application& app = Application::GetInstance();
   mbCooldown *= 0.1f;
   kSpaceCooldown *= 0.95f;
+
   col.red = static_cast<int>(color.x * 255.0f);
   col.green = static_cast<int>(color.y * 255.0f);
   col.blue = static_cast<int>(color.z * 255.0f);
@@ -141,6 +148,9 @@ void Sandbox::Render()
   ImGui::BeginMainMenuBar();
   if (ImGui::BeginMenu("File"))
   {
+    if (ImGui::MenuItem("New"))
+      pixels.clear();
+
     ImGui::MenuItem("Save");
     ImGui::Separator();
 
@@ -167,7 +177,7 @@ void Sandbox::Render()
     {
       Uint32 flags = SDL_GetWindowFlags(app.window);
 
-      if (flags & SDL_WINDOW_FULLSCREEN) 
+      if (flags & SDL_WINDOW_FULLSCREEN)
       {
         SDL_SetWindowFullscreen(app.window, 0);
       }
@@ -186,35 +196,6 @@ void Sandbox::Render()
     ImGui::Begin("Brush!", &brushMenu);
     ImGui::Text("Brush color");
     ImGui::ColorEdit4("Color", (float*)&color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
-    ImGui::End();
-  }
-
-  if (sandboxMenu)
-  {
-    ImGui::Begin("Sandbox!", &sandboxMenu);
-    ImGui::Text("Background color");
-    ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
-    ImGui::End();
-  }
-
-  if(materialMenu)
-  {
-    ImGuiIO& io = ImGui::GetIO();
-    ImVec2 windowSize = ImVec2(280, 200); // Set your desired size
-    ImVec2 center = ImVec2(
-    (io.DisplaySize.x - windowSize.x) * 0.5f,
-    (io.DisplaySize.y - windowSize.y) * 0.5f
-    );
-
-    ImGui::SetNextWindowPos(center, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove |
-                            ImGuiWindowFlags_NoResize |
-                            ImGuiWindowFlags_NoCollapse |
-                            ImGuiWindowFlags_NoTitleBar;
-
-    ImGui::Begin("Material Bucket!", &materialMenu, flags );
 
     if (ImGui::Button("Static"))
      currentBehaviour = STATIC;
@@ -231,6 +212,11 @@ void Sandbox::Render()
 
     ImGui::SameLine();
 
+    if (ImGui::Button("Fire"))
+      currentBehaviour = FIRE;
+
+    ImGui::SameLine();
+
     if (ImGui::Button("Dirt"))
       currentBehaviour = DIRT;
 
@@ -239,6 +225,29 @@ void Sandbox::Render()
     if (ImGui::Button("Stone"))
       currentBehaviour = STONE;
 
+    ImGui::End();
+  }
+
+  if (sandboxMenu)
+  {
+    ImGui::Begin("Sandbox!", &sandboxMenu);
+    ImGui::Text("Background color");
+    ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
+    ImGui::End();
+  }
+
+  if(materialMenu)
+  {
+    ImGuiIO& io = ImGui::GetIO();
+    ImVec2 windowSize = ImVec2(280, 200); // Set your desired size
+    ImVec2 spacing = ImVec2(100, 40);
+    ImVec2 center = ImVec2(
+    (io.DisplaySize.x - windowSize.x) * 0.5f,
+    (io.DisplaySize.y - windowSize.y) * 0.5f
+    );
+
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
     ImGui::End();
   }
   SDL_Color boundCol = { 255, 255, 255, 255 };

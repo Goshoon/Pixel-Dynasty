@@ -29,7 +29,7 @@ private:
   bool sandboxMenu = false;
   bool materialMenu = false;
   SDL_Rect worldBounds = { 0, 0, WINDOW_WIDTH/(int)RENDER_SCALE, WINDOW_HEIGHT/(int)RENDER_SCALE };
-  ImVec4 color = ImVec4( 1.0f, 0.0f, 0.0f, 1.0f );
+  ImVec4 color = ImVec4( 1.0f, 1.0f, 1.0f, 1.0f );
   ImVec4 backgroundColor = ImVec4( 0.0f, 0.0f, 0.0f, 1.0f );
   Color col;
   Quadtree quadtree = Quadtree(0, worldBounds);

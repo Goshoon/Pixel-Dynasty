@@ -7,6 +7,7 @@ enum Behaviour
   STATIC,
   DYNAMIC,
   WATER,
+  FIRE,
   DIRT,
   STONE
 };

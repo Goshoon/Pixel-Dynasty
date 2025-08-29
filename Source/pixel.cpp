@@ -28,6 +28,7 @@ Pixel::Pixel(int x, int y, Color col)
 
 void Pixel::Update(std::vector<Pixel*>& nearby)
 {
+  /* Particle behaviours */
   switch(behaviour)
   {
     case DYNAMIC:
@@ -62,14 +63,6 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
               position.x++;
             }
           }
-          else if (!leftCol && position.x > 0)
-          {
-            position.x--;
-          }
-          else if (!rightCol && position.x < worldBorder.x)
-          {
-            position.x++;
-          }
           else if (!leftBellowCol && position.x < 0 && position.y > worldBorder.y)
           {
             position.x--;
@@ -79,6 +72,14 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           {
             position.x++;
             position.y++;
+          }
+          else if (!leftCol && position.x > 0)
+          {
+            position.x--;
+          }
+          else if (!rightCol && position.x < worldBorder.x)
+          {
+            position.x++;
           }
         }
       }
@@ -90,6 +91,60 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
     case STONE:
       Gravity(nearby);
       break;
+    case FIRE:
+      bool leftCol = CheckCollision(nearby, -1, 0);
+      bool rightCol = CheckCollision(nearby, 1, 0);
+      bool leftTopCol = CheckCollision(nearby, -1, -1);
+      bool rightTopwCol = CheckCollision(nearby, 1, -1);
+
+      /*  */
+      if(!CheckCollision(nearby, 0, -1))
+        position.y--;
+
+      /*  */
+      if(!leftCol && !rightCol)
+      {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        std::uniform_int_distribution<> dist(0, 1);
+
+        int random_number = dist(gen);
+
+        if(random_number == 0 && position.x > 0)
+        {
+          position.x--;
+        }
+        else if (position.x < worldBorder.x)
+        {
+          position.x++;
+        }
+      }
+      else if (!leftTopCol && position.x < 0 && position.y > worldBorder.y)
+      {
+        position.x--;
+        position.y++;
+      }
+      else if (!rightTopwCol && position.x > worldBorder.x && position.y > worldBorder.y)
+      {
+        position.x++;
+        position.y++;
+      }
+      else if (!leftCol && position.x > 0)
+      {
+        position.x--;
+      }
+      else if (!rightCol && position.x < worldBorder.x)
+      {
+        position.x++;
+      }
+      break;
+  }
+
+  /* Harsh unstuck */
+  if(CheckCollision(nearby, 0, 0))
+  {
+    Unstuck(nearby, 20);
   }
 
   position.x = Clamp(position.x, 0, worldBorder.x);
@@ -168,4 +223,70 @@ bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset
   }
 
   return false;
+}
+
+void Pixel::Unstuck(std::vector<Pixel*>& nearby, int limit)
+{
+  if(CheckCollision(nearby, position.x, position.y))
+  {
+    for(int i = 0; i < limit; i++)
+    {
+      // Right
+      if(!CheckCollision(nearby, position.x + i, position.y))
+      {
+        position.x+=i;
+        break;
+      }
+      // Left
+      if(!CheckCollision(nearby, position.x - i, position.y))
+      {
+        position.x-=i;
+        break;
+      }
+        
+      // Up
+      if(!CheckCollision(nearby, position.x, position.y-i))
+      {
+        position.y-=i;
+        break;
+      }
+      // Down
+      if(!CheckCollision(nearby, position.x, position.y+i))
+      {
+        position.y+=i;
+        break;
+      }
+      
+      //Top Right
+      if(!CheckCollision(nearby, position.x+i, position.y-i))
+      {
+        position.x+=i;
+        position.y-=i;
+        break;
+      }
+      //Top Left
+      if(!CheckCollision(nearby, position.x-i, position.y-i))
+      {
+        position.x-=i;
+        position.y-=i;
+        break;
+      }
+        
+      //Bottom Right
+      if(!CheckCollision(nearby, position.x+i, position.y+i))
+      {
+        position.x+=i;
+        position.y+=i;
+        break;
+      }
+        
+      //Bottom Left
+      if(!CheckCollision(nearby, position.x-i, position.y+i))
+      {
+        position.x-=i;
+        position.y+=i;
+        break;
+      }
+    }
+  }
 }

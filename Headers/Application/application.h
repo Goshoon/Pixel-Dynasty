@@ -29,6 +29,8 @@ public:
   bool kSpace = false;
 	bool mbLeft = false;
 	bool mbRight = false;
+  bool scrollup = false;
+  bool scrolldown = false;
   SDL_Point mPosition; // Relative mouse Position (x, y)
 
   static Application& GetInstance()
