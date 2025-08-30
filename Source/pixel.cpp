@@ -87,6 +87,16 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
     case DIRT:
       Gravity(nearby);
+      bool topCol = CheckCollision(0, -1);
+
+      if (!topCol)
+      {
+        // Color = green;
+      }
+      else
+      {
+        // Color = brown
+      }
       break;
     case STONE:
       Gravity(nearby);
