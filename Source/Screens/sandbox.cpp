@@ -1,41 +1,4 @@
 #include "sandbox.h"
-Color Sandbox::ReturnColorType(Behaviour behaviourType)
-{
-  Color returnColor;
-  switch(behaviourType)
-  {
-    case WATER:
-      returnColor.red = 0;
-      returnColor.green = 0;
-      returnColor.blue = 155;
-      returnColor.alpha = 255;
-      break;
-    case FIRE:
-      returnColor.red = 155;
-      returnColor.green = 0;
-      returnColor.blue = 0;
-      returnColor.alpha = 255;
-      break;
-    case DIRT:
-      returnColor.red = 67;
-      returnColor.green = 40;
-      returnColor.blue = 24;
-      returnColor.alpha = 255;
-      break;
-    case STONE:
-      returnColor.red = 50;
-      returnColor.green = 50;
-      returnColor.blue = 50;
-      returnColor.alpha = 255;
-      break;
-    default:
-      returnColor = col;
-      break;
-  }
-
-  return returnColor;
-}
-
 Sandbox::Sandbox()
 {
 	std::cout << "Created Sandbox!\n";
@@ -44,29 +7,19 @@ Sandbox::Sandbox()
   deleteSound = Application::GetInstance().GetSound("delete");
 }
 
-Sandbox::~Sandbox()
-{}
-
 void Sandbox::Update()
 {
   Application& app = Application::GetInstance();
   mbCooldown *= 0.1f;
-  kSpaceCooldown *= 0.95f;
 
-  col.red = static_cast<int>(color.x * 255.0f);
-  col.green = static_cast<int>(color.y * 255.0f);
-  col.blue = static_cast<int>(color.z * 255.0f);
-  col.alpha = static_cast<int>(color.w * 255.0f);
+  brushColor.red = static_cast<int>(color.x * 255.0f);
+  brushColor.green = static_cast<int>(color.y * 255.0f);
+  brushColor.blue = static_cast<int>(color.z * 255.0f);
+  brushColor.alpha = static_cast<int>(color.w * 255.0f);
 
   app.backgroundColor.red = static_cast<int>(backgroundColor.x * 255.0f);
   app.backgroundColor.green = static_cast<int>(backgroundColor.y * 255.0f);
   app.backgroundColor.blue = static_cast<int>(backgroundColor.z * 255.0f);
-
-  if(app.kSpace && kSpaceCooldown < 1.0f)
-  {
-    kSpaceCooldown = 100.0f;
-    materialMenu = (materialMenu) ? false : true;
-  }
 
   /* Clear Quadtree and place Pixels on repective cells */
   quadtree.Clear();
@@ -74,11 +27,20 @@ void Sandbox::Update()
     quadtree.Insert(&pix);
 
   /* Update every Pixel */
-  for (auto& pix : pixels)
+  for (int i = 0; i < pixels.size(); )
   {
-    std::vector<Pixel*> nearby;
-    quadtree.Retrieve(nearby, pix.position);
-    pix.Update(nearby);
+    if (pixels[i].destroy)
+    {
+      pixels.erase(pixels.begin() + i);
+    }
+    else
+    {
+      std::vector<Pixel*> nearby;
+      quadtree.Retrieve(nearby, pixels[i].position);
+      pixels[i].Update(nearby);
+
+      i++;
+    }
   }
 
   /* Check if in SDL2 Context */
@@ -107,8 +69,8 @@ void Sandbox::Update()
         if (canPlace)
         {
           Mix_PlayMusic(placeSound, 1);
-          Pixel pixel = Pixel(app.mPosition.x, app.mPosition.y, col);
-          pixel.color = ReturnColorType(currentBehaviour);
+          Pixel pixel = Pixel(app.mPosition.x, app.mPosition.y, brushColor);
+          pixel.color = GetMaterialColor(brushColor, currentBehaviour);
           pixel.behaviour = currentBehaviour;
 
           pixels.emplace_back(pixel);
@@ -134,16 +96,25 @@ void Sandbox::Update()
       }
     } 
   }
+
+  /* Create UI Interactions */
+  UserInterface();
 }
 
 void Sandbox::Render()
 {
-  Application& app = Application::GetInstance();
+  Application& app = Application::GetInstance(); // App Singleton Reference
 
-  SDL_SetRenderDrawColor(app.renderer, col.red, col.green, col.blue, 100);
+  SDL_Color sunColor = { 255, 255, 0, 100 };
+  SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);
   SDL_RenderDrawPoint(app.renderer, app.mPosition.x, app.mPosition.y);
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw();
+}
+
+void Sandbox::UserInterface()
+{
+  Application& app = Application::GetInstance();
 
   ImGui::BeginMainMenuBar();
   if (ImGui::BeginMenu("File"))
@@ -194,8 +165,14 @@ void Sandbox::Render()
   if (brushMenu)
   {
     ImGui::Begin("Brush!", &brushMenu);
-    ImGui::Text("Brush color");
+    ImGui::Text("Brush options");
+    ImGui::SeparatorText("Brush size");
+
+    ImGui::SeparatorText("Brush Color");
     ImGui::ColorEdit4("Color", (float*)&color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
+
+    ImGui::Text("Material list!");
+    ImGui::SeparatorText("Colored Materials");
 
     if (ImGui::Button("Static"))
      currentBehaviour = STATIC;
@@ -205,10 +182,15 @@ void Sandbox::Render()
     if (ImGui::Button("Dynamic"))
       currentBehaviour = DYNAMIC;
 
-    ImGui::SameLine();
+    ImGui::SeparatorText("Earth materials");
 
     if (ImGui::Button("Water"))
       currentBehaviour = WATER;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Milk"))
+      currentBehaviour = MILK;
 
     ImGui::SameLine();
 
@@ -225,6 +207,19 @@ void Sandbox::Render()
     if (ImGui::Button("Stone"))
       currentBehaviour = STONE;
 
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cement"))
+      currentBehaviour = CEMENT;
+
+    if (ImGui::Button("Wood"))
+      currentBehaviour = WOOD;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Steam"))
+      currentBehaviour = STEAM;
+
     ImGui::End();
   }
 
@@ -233,22 +228,7 @@ void Sandbox::Render()
     ImGui::Begin("Sandbox!", &sandboxMenu);
     ImGui::Text("Background color");
     ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
+    ImGui::Checkbox("Sun", &showSun);
     ImGui::End();
   }
-
-  if(materialMenu)
-  {
-    ImGuiIO& io = ImGui::GetIO();
-    ImVec2 windowSize = ImVec2(280, 200); // Set your desired size
-    ImVec2 spacing = ImVec2(100, 40);
-    ImVec2 center = ImVec2(
-    (io.DisplaySize.x - windowSize.x) * 0.5f,
-    (io.DisplaySize.y - windowSize.y) * 0.5f
-    );
-
-    ImGui::SetNextWindowPos(center, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-    ImGui::End();
-  }
-  SDL_Color boundCol = { 255, 255, 255, 255 };
 }

@@ -1,8 +1,11 @@
 ### Notas ###
 
-  - Pixeles dinamicos
-  - Suavizado en el pincel
+  - Wood that reacts to fire
+  - El agua se convierte en vapor al hacer contacto con el fuego
+  - Agua reacciona a materiales pesados encima de ella
   - Diferentes tipos de pincel con grosoeres
+  - Modular elementos de la interfaz de usuario (segmentar en funciones)
+  - Suavizado en el pincel
   - Menu de inicio
   - Save State, Load, New, Exit
     * Save State: Vector de datos guardado en un archivo .json
