@@ -1,8 +1,8 @@
-#include "Behaviour.h"
+#include "material.h"
 
-Color GetMaterialColor(Color& brushColor, Behaviour behaviourType)
+Color GetMaterialColor(Color& brushColor, Material material)
 {
-  switch(behaviourType)
+  switch(material)
   {
     default: return brushColor;
         case WATER:  return Color{0, 0, 155, 225};
@@ -13,5 +13,6 @@ Color GetMaterialColor(Color& brushColor, Behaviour behaviourType)
         case CEMENT: return Color{25, 25, 25, 255};
         case WOOD:   return Color{111, 78, 55, 255};
         case STEAM:  return Color{155, 155, 155, 125};
+        case ASH:    return Color{100, 100, 100, 255};
   }
 }

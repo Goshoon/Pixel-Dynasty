@@ -19,18 +19,47 @@ Pixel::Pixel(int x, int y, Color col)
 void Pixel::Update(std::vector<Pixel*>& nearby)
 {
   /* Particle behaviours */
-  switch(behaviour)
+  switch(material)
   {
     default:
       break;
 
     case STONE:
+    case ASH:
+    case DYNAMIC:
       Gravity(nearby);
+      break;
+
+    case WOOD:
+      /* Other material reactions */
+      if (CheckCollision(nearby, 0, -1, FIRE))
+      {
+        material = ASH;
+        Color tmp;
+        color = GetMaterialColor(tmp, ASH);
+      }
+      if (CheckCollision(nearby, 0, 1, FIRE))
+      {
+        material = ASH;
+        Color tmp;
+        color = GetMaterialColor(tmp, ASH);
+      }
       break;
 
     case FIRE:
       GasBehaviour(nearby);
 
+      /* Other material reactions */
+      if (CheckCollision(nearby, 0, -1, FIRE))
+      {
+        destroy = true;
+      }
+      if (CheckCollision(nearby, 0, 1, FIRE))
+      {
+        destroy = true;
+      }
+
+      /* Gas Lifetime */
       if (lifetime > 1000)
         color.alpha--;
 
@@ -46,10 +75,6 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
       if (color.alpha < 100)
         destroy = true;
     break;
-
-    case DYNAMIC:
-      Gravity(nearby);
-      break;
 
     case MILK:
     case WATER:
@@ -104,13 +129,13 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         /* Other material reactions */
         if (CheckCollision(nearby, 0, -1, FIRE))
         {
-          behaviour = STEAM;
+          material = STEAM;
           Color tmp;
           color = GetMaterialColor(tmp, STEAM);
         }
         if (CheckCollision(nearby, 0, 1, FIRE))
         {
-          behaviour = STEAM;
+          material = STEAM;
           Color tmp;
           color = GetMaterialColor(tmp, STEAM);
         }
@@ -213,7 +238,7 @@ bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset
   return false;
 }
 
-bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Behaviour behaviourLookup)
+bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Material materialLookup)
 {
   SDL_Rect pos = position;
   pos.x += xoffset;
@@ -223,7 +248,7 @@ bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset
   {
     if (this == near) continue;
 
-    if (Collide(pos, near->position) && near->behaviour == behaviourLookup)
+    if (Collide(pos, near->position) && near->material == materialLookup)
       return true;
   }
 

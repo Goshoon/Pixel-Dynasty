@@ -2,7 +2,7 @@
 #include "screen.h"
 #include "pixel.h"
 #include "quadtree.h"
-#include "behaviour.h"
+#include "material.h"
 #include <vector>
 #include <memory>
 #include <cstddef>
@@ -22,7 +22,7 @@ public:
 private:
   void UserInterface();
 
-  Behaviour currentBehaviour = DYNAMIC;
+  Material currentMaterial = DYNAMIC;
   Mix_Music* placeSound;
   Mix_Music* deleteSound;
   float mbCooldown = 0.0f;
@@ -31,10 +31,11 @@ private:
   bool sandboxMenu = false;
   bool materialMenu = false;
   bool showSun = false;
+  int brushSize = 1;
   
   SDL_Rect worldBounds = { 0, 0, WINDOW_WIDTH/(int)RENDER_SCALE, WINDOW_HEIGHT/(int)RENDER_SCALE };
   ImVec4 color = ImVec4( 1.0f, 1.0f, 1.0f, 1.0f );            // ImGui Color wheel data (has to be casted into RGB)
   ImVec4 backgroundColor = ImVec4( 0.0f, 0.0f, 0.0f, 1.0f );  // ImGui Color wheel data (has to be casted into RGB)
-  Color brushColor; // ImGui to RGB Format
-  Quadtree quadtree = Quadtree(0, worldBounds); // World Quadtree, relative to screen and hardcoded, lol
+  Color brushColor;                                           // ImGui to RGB Format
+  Quadtree quadtree = Quadtree(0, worldBounds);               // World Quadtree, relative to screen and hardcoded, lol
 };

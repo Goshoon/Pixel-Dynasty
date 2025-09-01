@@ -1,7 +1,7 @@
 #pragma once
 #include "application.h"
 #include "color.h"
-#include "behaviour.h"
+#include "material.h"
 #include "collision.h"
 #include "gmath.h"
 
@@ -19,7 +19,7 @@ public:
   Pixel();
   Pixel(int x, int y, Color col);
   
-  Behaviour behaviour = DYNAMIC;
+  Material material = DYNAMIC;
   SDL_Rect position;
   Color color;
   bool moved = true;
@@ -27,7 +27,7 @@ public:
 
   bool CheckCollision(std::vector<Pixel*>& nearby);
   bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset);
-  bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Behaviour behaviourLookup);
+  bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Material materialLookup);
 
   void Update(std::vector<Pixel*>& nearby);
   void Draw();

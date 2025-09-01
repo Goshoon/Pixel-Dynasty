@@ -47,54 +47,74 @@ void Sandbox::Update()
   if (!ImGui::GetIO().WantCaptureMouse)
   {
     /* Create Pixels */
-    if(app.mbLeft && mbCooldown < 1)
+    if (app.mbLeft && mbCooldown < 1)
     {
-      if (SDL_PointInRect(&app.mPosition, &quadtree.bounds))
-      {
+    if (SDL_PointInRect(&app.mPosition, &quadtree.bounds))
+    {
         std::cout << pixels.size() << "\n";
-        bool canPlace = true;
-        std::vector<Pixel*> nearby;
-        SDL_Rect mPosition = { app.mPosition.x, app.mPosition.y, 1, 1 };
-        quadtree.Retrieve(nearby, mPosition);
+        int half = brushSize / 2;
 
-        for(auto& near : nearby)
+        // Loop over brush area
+        for (int dx = -half; dx <= half; dx++)
         {
-          if (near->position.x == app.mPosition.x && near->position.y == app.mPosition.y)
-          {
-            canPlace = false;
-            break;
-          }
+            for (int dy = -half; dy <= half; dy++)
+            {
+                int px = app.mPosition.x + dx;
+                int py = app.mPosition.y + dy;
+
+                // Collision check with quadtree
+                bool canPlace = true;
+                std::vector<Pixel*> nearby;
+                SDL_Rect posRect = { px, py, 1, 1 };
+                quadtree.Retrieve(nearby, posRect);
+
+                for (auto& near : nearby)
+                {
+                    if (near->position.x == px && near->position.y == py)
+                    {
+                        canPlace = false;
+                        break;
+                    }
+                }
+
+                if (canPlace)
+                {
+                    Pixel pixel(px, py, brushColor);
+                    pixel.color = GetMaterialColor(brushColor, currentMaterial);
+                    pixel.material = currentMaterial;
+
+                    pixels.emplace_back(pixel);
+                }
+            }
         }
 
-        if (canPlace)
-        {
-          Mix_PlayMusic(placeSound, 1);
-          Pixel pixel = Pixel(app.mPosition.x, app.mPosition.y, brushColor);
-          pixel.color = GetMaterialColor(brushColor, currentBehaviour);
-          pixel.behaviour = currentBehaviour;
-
-          pixels.emplace_back(pixel);
-          mbCooldown = 100.0f;
-        }
+        Mix_PlayMusic(placeSound, 1); // Play once per brush stroke
+        mbCooldown = 100.0f;
       }
     }
     else if (app.mbRight && mbCooldown < 1) /* Erase Pixels */
     {
       mbCooldown = 100.0f;
+      int half = brushSize / 2;
+
       for (auto it = pixels.begin(); it != pixels.end(); ) 
       {
-        if (SDL_PointInRect(&app.mPosition, &it->position) == SDL_TRUE) 
+        int dx = it->position.x - app.mPosition.x;
+        int dy = it->position.y - app.mPosition.y;
+
+        // Check if pixel is inside square brush
+        if (dx >= -half && dx <= half && dy >= -half && dy <= half)
         {
-          // Erase
-          pixels.erase(it);
-          Mix_PlayMusic(deleteSound, 1);
+          it = pixels.erase(it); // erase and update iterator
         }
         else
         {
           ++it;
         }
       }
-    } 
+
+      Mix_PlayMusic(deleteSound, 1); // Play once per stroke
+    }
   }
 
   /* Create UI Interactions */
@@ -105,9 +125,21 @@ void Sandbox::Render()
 {
   Application& app = Application::GetInstance(); // App Singleton Reference
 
-  SDL_Color sunColor = { 255, 255, 0, 100 };
+  /* Draw brush! */
   SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);
-  SDL_RenderDrawPoint(app.renderer, app.mPosition.x, app.mPosition.y);
+  int half = brushSize / 2; // so it grows around the center point
+  for (int dx = -half; dx <= half; dx++)
+  {
+    for (int dy = -half; dy <= half; dy++)
+    {
+        if (dx*dx + dy*dy <= half*half) // inside circle
+        {
+            SDL_RenderDrawPoint(app.renderer, app.mPosition.x + dx, app.mPosition.y + dy);
+        }
+    }
+  }
+
+  /* Draw all "pixel" classes (materials) */
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw();
 }
@@ -168,6 +200,8 @@ void Sandbox::UserInterface()
     ImGui::Text("Brush options");
     ImGui::SeparatorText("Brush size");
 
+    ImGui::SliderInt("Size", &brushSize, 1, 5);
+
     ImGui::SeparatorText("Brush Color");
     ImGui::ColorEdit4("Color", (float*)&color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
 
@@ -175,50 +209,53 @@ void Sandbox::UserInterface()
     ImGui::SeparatorText("Colored Materials");
 
     if (ImGui::Button("Static"))
-     currentBehaviour = STATIC;
+     currentMaterial = STATIC;
 
     ImGui::SameLine();
 
     if (ImGui::Button("Dynamic"))
-      currentBehaviour = DYNAMIC;
+      currentMaterial = DYNAMIC;
 
     ImGui::SeparatorText("Earth materials");
 
     if (ImGui::Button("Water"))
-      currentBehaviour = WATER;
+      currentMaterial = WATER;
 
     ImGui::SameLine();
 
     if (ImGui::Button("Milk"))
-      currentBehaviour = MILK;
+      currentMaterial = MILK;
 
     ImGui::SameLine();
 
     if (ImGui::Button("Fire"))
-      currentBehaviour = FIRE;
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Dirt"))
-      currentBehaviour = DIRT;
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Stone"))
-      currentBehaviour = STONE;
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Cement"))
-      currentBehaviour = CEMENT;
-
-    if (ImGui::Button("Wood"))
-      currentBehaviour = WOOD;
+      currentMaterial = FIRE;
 
     ImGui::SameLine();
 
     if (ImGui::Button("Steam"))
-      currentBehaviour = STEAM;
+      currentMaterial = STEAM;
+
+    if (ImGui::Button("Dirt"))
+      currentMaterial = DIRT;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Stone"))
+      currentMaterial = STONE;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cement"))
+      currentMaterial = CEMENT;
+
+    if (ImGui::Button("Wood"))
+      currentMaterial = WOOD;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Ash"))
+      currentMaterial = ASH;
 
     ImGui::End();
   }
@@ -228,7 +265,7 @@ void Sandbox::UserInterface()
     ImGui::Begin("Sandbox!", &sandboxMenu);
     ImGui::Text("Background color");
     ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
-    ImGui::Checkbox("Sun", &showSun);
+    //ImGui::Checkbox("Sun", &showSun);
     ImGui::End();
   }
 }

@@ -4,7 +4,7 @@
 #ifndef PIXEL_H
 #define PIXEL_H
 
-enum Behaviour 
+enum Material 
 {
   STATIC,
   DYNAMIC,
@@ -15,9 +15,10 @@ enum Behaviour
   STONE,
   CEMENT,
   WOOD,
-  STEAM
+  STEAM,
+  ASH
 };
 
-Color GetMaterialColor(Color& brushColor, Behaviour behaviourType);
+Color GetMaterialColor(Color& brushColor, Material behaviourType);
 
 #endif
