@@ -50,11 +50,11 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
       GasBehaviour(nearby);
 
       /* Other material reactions */
-      if (CheckCollision(nearby, 0, -1, FIRE))
+      if (CheckCollision(nearby, 0, -1, WATER))
       {
         destroy = true;
       }
-      if (CheckCollision(nearby, 0, 1, FIRE))
+      if (CheckCollision(nearby, 0, 1, WATER))
       {
         destroy = true;
       }

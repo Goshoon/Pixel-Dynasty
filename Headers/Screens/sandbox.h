@@ -25,6 +25,9 @@ private:
   Material currentMaterial = DYNAMIC;
   Mix_Music* placeSound;
   Mix_Music* deleteSound;
+  Mix_Music* woodSound;
+  Mix_Music* fireSound;
+  Mix_Music* waterSound;
   float mbCooldown = 0.0f;
   float kSpaceCooldown = 0.0f;
   bool brushMenu = false;

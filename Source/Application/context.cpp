@@ -6,6 +6,9 @@ void LoadSounds()
   Application& app = Application::GetInstance();
   app.AddSound("pixel", "Resources/Sound/pixel.ogg");
   app.AddSound("delete", "Resources/Sound/delete.ogg");
+  app.AddSound("wood", "Resources/Sound/wood.ogg");
+  app.AddSound("fire", "Resources/Sound/fire.ogg");
+  app.AddSound("water", "Resources/Sound/water.ogg");
 }
 
 void Inititialize() // Iniciar SDL y SDL_Image

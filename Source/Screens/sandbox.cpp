@@ -5,6 +5,9 @@ Sandbox::Sandbox()
   pixels.reserve(1700);
   placeSound = Application::GetInstance().GetSound("pixel");
   deleteSound = Application::GetInstance().GetSound("delete");
+  woodSound = Application::GetInstance().GetSound("wood");
+  fireSound = Application::GetInstance().GetSound("fire");
+  waterSound = Application::GetInstance().GetSound("water");
 }
 
 void Sandbox::Update()
@@ -88,7 +91,22 @@ void Sandbox::Update()
             }
         }
 
-        Mix_PlayMusic(placeSound, 1); // Play once per brush stroke
+        switch(currentMaterial) // Play once per brush stroke
+        {
+        default:
+          Mix_PlayMusic(placeSound, 1);
+          break;
+        case WOOD:
+          Mix_PlayMusic(woodSound, 1);
+          break;
+        case FIRE:
+          Mix_PlayMusic(fireSound, 1);
+          break;
+        case WATER:
+          Mix_PlayMusic(waterSound, 1);
+          break;
+        }
+        
         mbCooldown = 100.0f;
       }
     }
