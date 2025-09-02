@@ -165,6 +165,7 @@ void Sandbox::Render()
 void Sandbox::UserInterface()
 {
   Application& app = Application::GetInstance();
+  ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoBackground;
 
   ImGui::BeginMainMenuBar();
   if (ImGui::BeginMenu("File"))
@@ -214,7 +215,7 @@ void Sandbox::UserInterface()
 
   if (brushMenu)
   {
-    ImGui::Begin("Brush!", &brushMenu);
+    ImGui::Begin("Brush!", &brushMenu, windowFlags);
     ImGui::Text("Brush options");
     ImGui::SeparatorText("Brush size");
 
@@ -280,7 +281,7 @@ void Sandbox::UserInterface()
 
   if (sandboxMenu)
   {
-    ImGui::Begin("Sandbox!", &sandboxMenu);
+    ImGui::Begin("Sandbox!", &sandboxMenu, windowFlags);
     ImGui::Text("Background color");
     ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
     //ImGui::Checkbox("Sun", &showSun);
