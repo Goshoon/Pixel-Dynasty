@@ -12,8 +12,8 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 640
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 800
 #define WINDOW_NAME "Pixel Dynasty: Sand Simulation!"
 #define RENDER_SCALE 16.0f
 

@@ -20,21 +20,24 @@ void Quadtree::Split()
     int x = bounds.x;
     int y = bounds.y;
 
-    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x + subWidth, y, subWidth, subHeight}));
+    if (subWidth == 0 || subHeight == 0)
+        return;
+
+    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x + subWidth, y, bounds.w - subWidth, subHeight}));
     nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x, y, subWidth, subHeight}));
-    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x, y + subHeight, subWidth, subHeight}));
-    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x + subWidth, y + subHeight, subWidth, subHeight}));
-}
+    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x, y + subHeight, subWidth, bounds.h - subHeight}));
+    nodes.emplace_back(std::make_unique<Quadtree>(level + 1, SDL_Rect{x + subWidth, y + subHeight, bounds.w - subWidth, bounds.h - subHeight}));
+} 
 
 int Quadtree::GetIndex(const SDL_Rect& rect) const
 {
     int verticalMidpoint = bounds.x + bounds.w / 2;
     int horizontalMidpoint = bounds.y + bounds.h / 2;
 
-    bool top = rect.y + rect.h < horizontalMidpoint;
-    bool bottom = rect.y > horizontalMidpoint;
-    bool left = rect.x + rect.w < verticalMidpoint;
-    bool right = rect.x > verticalMidpoint;
+    bool top = rect.y + rect.h <= horizontalMidpoint;
+    bool bottom = rect.y >= horizontalMidpoint;
+    bool left = rect.x + rect.w <= verticalMidpoint;
+    bool right = rect.x >= verticalMidpoint; 
 
     if (top && right) return 0;
     if (top && left) return 1;
@@ -81,7 +84,9 @@ void Quadtree::Insert(Pixel* pixel)
 
 void Quadtree::Retrieve(std::vector<Pixel*>& returnPixels, const SDL_Rect& area) 
 {
-    // Recurse into children that intersect the query area
+    if (!SDL_HasIntersection(&bounds, &area))
+        return;
+
     if (!nodes.empty()) {
         for (const auto& node : nodes) {
             if (SDL_HasIntersection(&node->bounds, &area)) {
@@ -92,7 +97,7 @@ void Quadtree::Retrieve(std::vector<Pixel*>& returnPixels, const SDL_Rect& area)
 
     // Add all objects in this node
     returnPixels.insert(returnPixels.end(), pixels.begin(), pixels.end());
-}
+} 
 
 void Quadtree::Draw(SDL_Renderer* renderer) const
 {

@@ -5,16 +5,15 @@
 #include "pixel.h"
 
 class Quadtree
-{
-    static const int MAX_ENTITIES = 4;
-    static const int MAX_LEVELS = 3;
+    {
+    static const int MAX_ENTITIES = 8;
+    static const int MAX_LEVELS = 4;
 
     int level;
     std::vector<Pixel*> pixels;
     std::vector<std::unique_ptr<Quadtree>> nodes;
 public:
     Quadtree(int level, SDL_Rect bounds);
-
     SDL_Rect bounds;
 
     void Clear();

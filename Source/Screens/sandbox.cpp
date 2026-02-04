@@ -1,6 +1,10 @@
 #include "sandbox.h"
+#include <algorithm>
+
 Sandbox::Sandbox()
 {
+  Application& app = Application::GetInstance(); // App Singleton Reference
+
 	std::cout << "Created Sandbox!\n";
   pixels.reserve(1700);
   placeSound = Application::GetInstance().GetSound("pixel");
@@ -8,12 +12,24 @@ Sandbox::Sandbox()
   woodSound = Application::GetInstance().GetSound("wood");
   fireSound = Application::GetInstance().GetSound("fire");
   waterSound = Application::GetInstance().GetSound("water");
+
+  pixelTexture = SDL_CreateTexture(app.renderer,
+                                    SDL_PIXELFORMAT_RGBA8888,
+                                    SDL_TEXTUREACCESS_STREAMING,
+                                    WINDOW_WIDTH, WINDOW_HEIGHT
+                                  );
+}
+
+Sandbox::~Sandbox()
+{
+  delete[] pixelDraw;
+  SDL_DestroyTexture(pixelTexture);
 }
 
 void Sandbox::Update()
 {
   Application& app = Application::GetInstance();
-  mbCooldown *= 0.1f;
+  mbCooldown *= 0.11f;
 
   brushColor.red = static_cast<int>(color.x * 255.0f);
   brushColor.green = static_cast<int>(color.y * 255.0f);
@@ -39,7 +55,12 @@ void Sandbox::Update()
     else
     {
       std::vector<Pixel*> nearby;
-      quadtree.Retrieve(nearby, pixels[i].position);
+      SDL_Rect area = pixels[i].position;
+      area.x = std::max(worldBounds.x, area.x - 1);
+      area.y = std::max(worldBounds.y, area.y - 1);
+      area.w = area.w + 2;
+      area.h = area.h + 2;
+      quadtree.Retrieve(nearby, area);
       pixels[i].Update(nearby);
 
       i++;
@@ -54,9 +75,8 @@ void Sandbox::Update()
     {
     if (SDL_PointInRect(&app.mPosition, &quadtree.bounds))
     {
-        std::cout << pixels.size() << "\n";
         int half = brushSize / 2;
-
+        
         // Loop over brush area
         for (int dx = -half; dx <= half; dx++)
         {
@@ -107,7 +127,10 @@ void Sandbox::Update()
           break;
         }
         
-        mbCooldown = 100.0f;
+        if (currentMaterial == FIRE)
+          mbCooldown = 400.0f;
+        else
+          mbCooldown = 100.0f;
       }
     }
     else if (app.mbRight && mbCooldown < 1) /* Erase Pixels */
@@ -142,6 +165,7 @@ void Sandbox::Update()
 void Sandbox::Render()
 {
   Application& app = Application::GetInstance(); // App Singleton Reference
+  std::fill_n(pixelDraw, WINDOW_WIDTH * WINDOW_HEIGHT, app.backgroundColor.GetColor());
 
   /* Draw brush! */
   SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);
@@ -156,7 +180,16 @@ void Sandbox::Render()
         }
     }
   }
+/*
+  for(int i = 0; i < pixels.size(); i++)
+  {
+    Pixel& pix = pixels.at(i);
+    pixelDraw[pix.position.x * pix.position.y] = pix.color.GetColor();
+  }
 
+  SDL_UpdateTexture(pixelTexture, nullptr, pixelDraw, WINDOW_WIDTH * sizeof(uint32_t));
+  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, nullptr);
+*/
   /* Draw all "pixel" classes (materials) */
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw();
@@ -219,7 +252,7 @@ void Sandbox::UserInterface()
     ImGui::Text("Brush options");
     ImGui::SeparatorText("Brush size");
 
-    ImGui::SliderInt("Size", &brushSize, 1, 5);
+    ImGui::SliderInt("Size", &brushSize, 1, 10);
 
     ImGui::SeparatorText("Brush Color");
     ImGui::ColorEdit4("Color", (float*)&color, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
@@ -276,6 +309,11 @@ void Sandbox::UserInterface()
     if (ImGui::Button("Ash"))
       currentMaterial = ASH;
 
+    ImGui::SeparatorText("Details");
+    ImGui::Text("Pixel ammount: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(pixels.size()).c_str());
+
     ImGui::End();
   }
 
@@ -284,7 +322,6 @@ void Sandbox::UserInterface()
     ImGui::Begin("Sandbox!", &sandboxMenu, windowFlags);
     ImGui::Text("Background color");
     ImGui::ColorEdit3("Color",(float*)&backgroundColor , ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar );
-    //ImGui::Checkbox("Sun", &showSun);
     ImGui::End();
   }
 }

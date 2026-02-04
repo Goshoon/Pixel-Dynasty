@@ -12,12 +12,15 @@ Pixel::Pixel(int x, int y, Color col)
   position.w = 1;
   position.h = 1;
   color = col;
-  worldBorder.x = WINDOW_WIDTH / RENDER_SCALE - 1;
+  worldBorder.x = WINDOW_WIDTH / RENDER_SCALE;
   worldBorder.y = WINDOW_HEIGHT / RENDER_SCALE - 1;
 }
 
 void Pixel::Update(std::vector<Pixel*>& nearby)
 {
+  if (material != STATIC && CheckCollision(nearby, 0, 0))
+    Unstuck(nearby, 3);
+
   /* Particle behaviours */
   switch(material)
   {
@@ -25,9 +28,16 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
       break;
 
     case STONE:
-    case ASH:
     case DYNAMIC:
       Gravity(nearby);
+      break;
+
+    case ASH:
+      Gravity(nearby);
+
+      lifetime++;
+      if (lifetime > 900)
+        destroy = true;
       break;
 
     case WOOD:
@@ -90,9 +100,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         {
           if(!leftCol && !rightCol)
           {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-
+            static thread_local std::mt19937 gen(std::random_device{}());
             std::uniform_int_distribution<> dist(-1, 1);
 
             int random_number = dist(gen);
@@ -106,12 +114,12 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
               position.x++;
             }
           }
-          else if (!leftBellowCol && position.x < 0 && position.y > worldBorder.y)
+          else if (!leftBellowCol && position.x > 0 && position.y < worldBorder.y)
           {
             position.x--;
             position.y++;
           }
-          else if (!rightBellowCol && position.x > worldBorder.x && position.y > worldBorder.y)
+          else if (!rightBellowCol && position.x < worldBorder.x && position.y < worldBorder.y)
           {
             position.x++;
             position.y++;
@@ -124,7 +132,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           {
             position.x++;
           }
-        }
+        } 
 
         /* Other material reactions */
         if (CheckCollision(nearby, 0, -1, FIRE))
@@ -140,18 +148,11 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           color = GetMaterialColor(tmp, STEAM);
         }
 
-        /* Harsh unstuck */
-        if(CheckCollision(nearby, 0, 0))
-        {
-          Unstuck(nearby, 5);
-        }
-
         /* Change alpha quickly */
-        std::random_device rd;  
-        std::mt19937 gen(rd());
+        static thread_local std::mt19937 gen(std::random_device{}());
         std::uniform_int_distribution<> dist(100, 255);
         int random_number = dist(gen);
-        color.alpha = random_number;
+        color.alpha = random_number; 
       }
       break;
 
@@ -185,7 +186,7 @@ void Pixel::Draw()
 {
   Application& app = Application::GetInstance();
   SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
-  SDL_RenderDrawRect(app.renderer, &position);
+  SDL_RenderDrawPoint(app.renderer, position.x, position.y);
 }
 
 /* Gravity */
@@ -198,7 +199,11 @@ void Pixel::Gravity(std::vector<Pixel*>& nearby)
     if (CheckCollision(nearby, 0, 1))
       canGoDown = false;
 
-    if (canGoDown)
+    if (!canGoDown)
+    {
+      Unstuck(nearby, 3);
+    }
+    else
     {
       position.y++;
     }
@@ -255,6 +260,7 @@ bool Pixel::CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset
   return false;
 }
 
+/* Unstuck */
 void Pixel::Unstuck(std::vector<Pixel*>& nearby, int limit)
 {
   if(CheckCollision(nearby, 0, 0))
@@ -335,9 +341,7 @@ void Pixel::GasBehaviour(std::vector<Pixel*>& nearby)
 
     if (!leftCol && !rightCol)
     {
-      std::random_device rd;
-      std::mt19937 gen(rd());
-
+      static thread_local std::mt19937 gen(std::random_device{}());
       std::uniform_int_distribution<> dist(-1, 1);
 
       int random_number = dist(gen);
