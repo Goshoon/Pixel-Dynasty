@@ -15,7 +15,7 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 800
 #define WINDOW_NAME "Pixel Dynasty: Sand Simulation!"
-#define RENDER_SCALE 16.0f
+#define RENDER_SCALE 12.0f
 
 class Application
 {

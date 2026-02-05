@@ -6,7 +6,7 @@ Sandbox::Sandbox()
   Application& app = Application::GetInstance(); // App Singleton Reference
 
 	std::cout << "Created Sandbox!\n";
-  pixels.reserve(1700);
+  pixels.reserve(MAX_PIXELS);
   placeSound = Application::GetInstance().GetSound("pixel");
   deleteSound = Application::GetInstance().GetSound("delete");
   woodSound = Application::GetInstance().GetSound("wood");
@@ -40,31 +40,34 @@ void Sandbox::Update()
   app.backgroundColor.green = static_cast<int>(backgroundColor.y * 255.0f);
   app.backgroundColor.blue = static_cast<int>(backgroundColor.z * 255.0f);
 
-  /* Clear Quadtree and place Pixels on repective cells */
+  /* Clear Quadtree and place Pixels on respective cells */
   quadtree.Clear();
   for (auto& pix : pixels)
     quadtree.Insert(&pix);
 
-  /* Update every Pixel */
-  for (int i = 0; i < pixels.size(); )
+  /* Update every Pixel (do NOT erase while quadtree holds pointers) */
+  for (auto& pix : pixels)
   {
-    if (pixels[i].destroy)
-    {
-      pixels.erase(pixels.begin() + i);
-    }
-    else
-    {
-      std::vector<Pixel*> nearby;
-      SDL_Rect area = pixels[i].position;
-      area.x = std::max(worldBounds.x, area.x - 1);
-      area.y = std::max(worldBounds.y, area.y - 1);
-      area.w = area.w + 2;
-      area.h = area.h + 2;
-      quadtree.Retrieve(nearby, area);
-      pixels[i].Update(nearby);
+    std::vector<Pixel*> nearby;
+    SDL_Rect area = pix.position;
+    area.x = std::max(worldBounds.x, area.x - 1);
+    area.y = std::max(worldBounds.y, area.y - 1);
+    area.w = area.w + 2;
+    area.h = area.h + 2;
+    quadtree.Retrieve(nearby, area);
+    pix.Update(nearby);
+  }
 
-      i++;
-    }
+  /* Remove destroyed pixels after updates to avoid invalidating pointers and rebuild quadtree */
+  {
+    size_t before = pixels.size();
+    pixels.erase(std::remove_if(pixels.begin(), pixels.end(), [](const Pixel& p){ return p.destroy; }), pixels.end());
+    size_t after = pixels.size();
+    if (before != after) std::cout << "Removed " << (before - after) << " destroyed pixels\n";
+
+    quadtree.Clear();
+    for (auto& pix : pixels)
+      quadtree.Insert(&pix);
   }
 
   /* Check if in SDL2 Context */
@@ -102,6 +105,13 @@ void Sandbox::Update()
 
                 if (canPlace)
                 {
+                    /* Prevent overfilling the world */
+                    if (pixels.size() >= MAX_PIXELS)
+                    {
+                      std::cout << "Reached pixel limit (" << MAX_PIXELS << "), skipping placement\n";
+                      continue;
+                    }
+
                     Pixel pixel(px, py, brushColor);
                     pixel.color = GetMaterialColor(brushColor, currentMaterial);
                     pixel.material = currentMaterial;
@@ -137,22 +147,18 @@ void Sandbox::Update()
     {
       mbCooldown = 100.0f;
       int half = brushSize / 2;
+      int erasedCount = 0;
 
-      for (auto it = pixels.begin(); it != pixels.end(); ) 
-      {
-        int dx = it->position.x - app.mPosition.x;
-        int dy = it->position.y - app.mPosition.y;
+      auto new_end = std::remove_if(pixels.begin(), pixels.end(), [&](const Pixel& p){
+        int dx = p.position.x - app.mPosition.x;
+        int dy = p.position.y - app.mPosition.y;
+        bool inside = (dx >= -half && dx <= half && dy >= -half && dy <= half);
+        if (inside) erasedCount++;
+        return inside;
+      });
+      pixels.erase(new_end, pixels.end());
 
-        // Check if pixel is inside square brush
-        if (dx >= -half && dx <= half && dy >= -half && dy <= half)
-        {
-          it = pixels.erase(it); // erase and update iterator
-        }
-        else
-        {
-          ++it;
-        }
-      }
+      if (erasedCount > 0) std::cout << "Erased " << erasedCount << " pixels\n";
 
       Mix_PlayMusic(deleteSound, 1); // Play once per stroke
     }
@@ -180,16 +186,7 @@ void Sandbox::Render()
         }
     }
   }
-/*
-  for(int i = 0; i < pixels.size(); i++)
-  {
-    Pixel& pix = pixels.at(i);
-    pixelDraw[pix.position.x * pix.position.y] = pix.color.GetColor();
-  }
-
-  SDL_UpdateTexture(pixelTexture, nullptr, pixelDraw, WINDOW_WIDTH * sizeof(uint32_t));
-  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, nullptr);
-*/
+  
   /* Draw all "pixel" classes (materials) */
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw();
@@ -206,7 +203,15 @@ void Sandbox::UserInterface()
     if (ImGui::MenuItem("New"))
       pixels.clear();
 
-    ImGui::MenuItem("Save");
+    if (ImGui::MenuItem("Save"))
+      SaveGame(pixels);
+
+    if (ImGui::MenuItem("Load"))
+    {
+      pixels.clear();
+      LoadGame(pixels);
+    }
+
     ImGui::Separator();
 
     if (ImGui::MenuItem("Exit"))

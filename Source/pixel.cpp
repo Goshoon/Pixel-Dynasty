@@ -1,8 +1,15 @@
 // https://www.youtube.com/watch?v=iUq0waTh9Pw&ab_channel=%E2%98%86111loggedin%2F%2Fxxenaa%E2%99%A1
 #include "pixel.h"
+#include <iostream>
 
 Pixel::Pixel()
-{}
+{
+  lifetime = 0;
+  position.w = 1;
+  position.h = 1;
+  worldBorder.x = WINDOW_WIDTH / RENDER_SCALE;
+  worldBorder.y = WINDOW_HEIGHT / RENDER_SCALE - 1;
+}
 
 Pixel::Pixel(int x, int y, Color col)
 {
@@ -20,6 +27,13 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 {
   if (material != STATIC && CheckCollision(nearby, 0, 0))
     Unstuck(nearby, 3);
+
+  if (position.x < -1000 || position.x > worldBorder.x + 1000 || position.y < -1000 || position.y > worldBorder.y + 1000)
+  {
+    std::cerr << "Pixel::Update abnormal pos (" << position.x << "," << position.y << ") resetting to bounds\n";
+    position.x = Clamp(position.x, 0, worldBorder.x);
+    position.y = Clamp(position.y, 0, worldBorder.y);
+  }
 
   /* Particle behaviours */
   switch(material)
@@ -185,6 +199,11 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 void Pixel::Draw()
 {
   Application& app = Application::GetInstance();
+  if (position.x < 0 || position.x > worldBorder.x || position.y < 0 || position.y > worldBorder.y)
+  {
+    std::cerr << "Warning: Pixel::Draw out-of-bounds pos(" << position.x << "," << position.y << ") material=" << static_cast<int>(material) << "\n";
+    return;
+  }
   SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
   SDL_RenderDrawPoint(app.renderer, position.x, position.y);
 }

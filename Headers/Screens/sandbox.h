@@ -3,6 +3,7 @@
 #include "pixel.h"
 #include "quadtree.h"
 #include "material.h"
+#include "saveAndLoad.h"
 #include <vector>
 #include <memory>
 #include <cstddef>
@@ -37,6 +38,7 @@ private:
   bool materialMenu = false;
   bool showSun = false;
   int brushSize = 1;
+  static const size_t MAX_PIXELS = 6500;
     
   SDL_Texture* pixelTexture;
   uint32_t* pixelDraw = new uint32_t[WINDOW_WIDTH * WINDOW_HEIGHT];

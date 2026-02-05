@@ -25,6 +25,37 @@ public:
   bool moved = true;
   bool destroy = false;
 
+  void save(std::ostream& out) const
+  {
+        out << static_cast<int>(material) << " "
+            << position.x << " "
+            << position.y << " "
+            << position.w << " "
+            << position.h << " "
+            << color.red << " "
+            << color.green << " "
+            << color.blue << " "
+            << color.alpha << " "
+            << moved << "\n";
+  }
+
+  void load(std::istream& in)
+  {
+    int mat;
+    in >> mat;
+    material = static_cast<Material>(mat);
+
+    in >> position.x
+      >> position.y
+      >> position.w
+      >> position.h
+      >> color.red
+      >> color.green
+      >> color.blue
+      >> color.alpha
+      >> moved;
+  }
+
   bool CheckCollision(std::vector<Pixel*>& nearby);
   bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset);
   bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Material materialLookup);
