@@ -84,17 +84,17 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
       }
 
       /* Gas Lifetime */
-      if (lifetime > 800)
+      if (lifetime > 300)
         color.alpha--;
 
-      if (color.alpha < 140)
+      if (color.alpha < 100)
         destroy = true;
     break;
     case STEAM:
       GasBehaviour(nearby);
 
-      if (lifetime > 1000)
-        color.alpha--;
+      if (lifetime > 100)
+        color.alpha-=2;
 
       if (color.alpha < 100)
         destroy = true;

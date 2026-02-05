@@ -138,7 +138,7 @@ void Sandbox::Update()
         }
         
         if (currentMaterial == FIRE)
-          mbCooldown = 400.0f;
+          mbCooldown = 800.0f;
         else
           mbCooldown = 100.0f;
       }
@@ -165,7 +165,7 @@ void Sandbox::Update()
   }
 
   /* Create UI Interactions */
-  UserInterface();
+  if (app.hideInterface) UserInterface();
 }
 
 void Sandbox::Render()

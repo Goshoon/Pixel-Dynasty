@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
 	Inititialize();
 
 	// Create initial scene
-  	std::unique_ptr<Screen> currentScreen = std::make_unique<Sandbox>();
+  	std::unique_ptr<Screen> currentScreen = std::make_unique<MainMenu>();
   	Application& app = Application::GetInstance();
 
 	while(!app.done)

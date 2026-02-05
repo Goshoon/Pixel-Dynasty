@@ -137,10 +137,7 @@ void Application::Input() /* Teclas e interacciones con la ventana */
 			case SDL_MOUSEBUTTONUP:
 				mbLeft = false;
 				mbRight = false;
-			break; /*
-      case SDL_MOUSESCROLLUP
-        sscrollup = true;
-      break; */
+			break;
         }
     }
 }
@@ -149,12 +146,21 @@ void Application::InputReleased(SDL_Event* event)
 {
 	switch (event->key.keysym.sym)
 	{
+		case SDLK_F1:
+		{
+			hideInterface = true;
+			break;
+		}
 		case SDLK_ESCAPE:
+		{
 			done = true;
-  		break;
+		}
+  	break;
     case SDLK_SPACE:
+		{
       kSpace = false;
-      break;
+    }
+		break;
 	}
 }
 
@@ -162,9 +168,16 @@ void Application::InputPressed(SDL_Event* event)
 {
 	switch (event->key.keysym.sym)
 	{
+		case SDLK_F1:
+		{
+			hideInterface = false;
+			break;
+		}
     case SDLK_SPACE:
+    {
       kSpace = true;
       break;
+    }
 	}
 }
 

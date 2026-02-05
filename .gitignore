@@ -2,6 +2,7 @@
 *.o
 imgui.ini
 *.dll
+*.data
 
 # Ignorar folder
 /Dependencies/

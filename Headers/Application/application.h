@@ -15,7 +15,7 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 800
 #define WINDOW_NAME "Pixel Dynasty: Sand Simulation!"
-#define RENDER_SCALE 12.0f
+#define RENDER_SCALE 14.0f
 
 class Application
 {
@@ -31,6 +31,7 @@ public:
 	bool mbRight = false;
   bool scrollup = false;
   bool scrolldown = false;
+  bool hideInterface = true;
   SDL_Point mPosition; // Relative mouse Position (x, y)
 
   static Application& GetInstance()

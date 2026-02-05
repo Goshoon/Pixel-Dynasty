@@ -1,7 +1,6 @@
 ### Notas ###
 
   - Wood that reacts to fire
-  - El agua se convierte en vapor al hacer contacto con el fuego
   - Agua reacciona a materiales pesados encima de ella
   - Diferentes tipos de pincel con grosoeres
   - Modular elementos de la interfaz de usuario (segmentar en funciones)
