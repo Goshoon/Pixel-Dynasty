@@ -16,7 +16,8 @@ enum Material
   CEMENT,
   WOOD,
   STEAM,
-  ASH
+  ASH,
+  DYNAMITE
 };
 
 Color GetMaterialColor(Color& brushColor, Material behaviourType);

@@ -2,32 +2,33 @@
 
 MainMenu::MainMenu()
 {
-	std::cout << "Welcome to Pixel Dynasty!\n";
+    std::cout << "Welcome to Pixel Dynasty!\n";
+    background = Application::GetInstance().GetTexture("main_menu_background");
+    song = Application::GetInstance().GetSound("song_main_menu");
+    Mix_PlayMusic(song, 0);
 }
 
 MainMenu::~MainMenu()
 {
-	
+    Mix_HaltMusic();
 }
 
 void MainMenu::Update()
-{
-	UserInterface();
-}
+{}
 
 void MainMenu::Render()
 {
-
+    Application::GetInstance().RenderImage(background,  0, 0);
+    UserInterface();
 }
 
 void MainMenu::UserInterface()
 {
     Application& app = Application::GetInstance();
-
     ImGuiIO& io = ImGui::GetIO();
 
     // Window size
-    ImVec2 windowSize(400, 200);
+    ImVec2 windowSize(500, 300);
 
     // Center window on screen
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -46,19 +47,43 @@ void MainMenu::UserInterface()
         ImGuiWindowFlags_NoTitleBar
     );
 
-    /*
-    	This code is so hard codded its ugly but i dont care (for now)
-    */
+    ImVec2 actualWindowSize = ImGui::GetWindowSize();
+    float windowWidth = actualWindowSize.x;
+    float windowHeight = actualWindowSize.y;
+
+    // Calculate content height
+    float contentHeight = 80.0f + 40.0f + 40.0f; // title + 2 buttons
+    float topPadding = (windowHeight - contentHeight) * 0.5f;
+
+    // Add vertical spacing to center
+    ImGui::Dummy(ImVec2(0, topPadding));
+
+    // Title with larger font
+    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
+    ImGui::SetWindowFontScale(2.8f);
     const char* text = "Pixel Dynasty!";
-    float textWidth = ImGui::CalcTextSize(text).x;
-    ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textWidth) * 0.5f); // Center text horizontally
+    ImVec2 textSize = ImGui::CalcTextSize(text);
+    ImGui::SetCursorPosX((windowWidth - textSize.x) * 0.5f);
     ImGui::Text("%s", text);
-    textWidth = ImGui::CalcTextSize("Begin").x;
-    ImGui::SetCursorPosX((ImGui::GetWindowSize().x-textWidth) * 0.5f);
-    ImGui::Button("Begin");
-    textWidth = ImGui::CalcTextSize("Exit").x;
-    ImGui::SetCursorPosX((ImGui::GetWindowSize().x-textWidth) * 0.5f);
-    ImGui::Button("Exit");
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopFont();
+
+    // Add spacing between title and buttons
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // Buttons
+    ImVec2 buttonSize(150, 40);
+
+    // Begin Button
+    ImGui::SetCursorPosX((windowWidth - buttonSize.x) * 0.5f);
+    if (ImGui::Button("Begin", buttonSize)) nextScene = true;
+
+    ImGui::Spacing();
+
+    // Exit Button
+    ImGui::SetCursorPosX((windowWidth - buttonSize.x) * 0.5f);
+    if (ImGui::Button("Exit", buttonSize)) app.done = true;
 
     ImGui::End();
 }

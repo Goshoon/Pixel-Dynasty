@@ -102,7 +102,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
     case MILK:
     case WATER:
-      {
+    {
         /* Movement and reactions to enviromment */
         Gravity(nearby);
         bool leftCol = CheckCollision(nearby, -1, 0);
@@ -167,10 +167,11 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         std::uniform_int_distribution<> dist(100, 255);
         int random_number = dist(gen);
         color.alpha = random_number; 
-      }
-      break;
+    }
+    break;
 
     case DIRT:
+    {
       Gravity(nearby);
       bool topCol = CheckCollision(nearby, 0, -1);
 
@@ -189,6 +190,14 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         color.alpha = 255;
       }
       break;
+    }
+
+    case DYNAMITE:
+    {
+      Gravity(nearby);
+      
+      break;
+    }
   }
 
   /* Stay within world limits */

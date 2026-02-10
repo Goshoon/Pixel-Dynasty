@@ -15,4 +15,6 @@ public:
 	void Render() override;
 private:
   void UserInterface();
+  SDL_Texture* background;
+  Mix_Music* song;
 };

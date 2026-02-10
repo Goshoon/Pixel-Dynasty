@@ -214,6 +214,9 @@ void Sandbox::UserInterface()
 
     ImGui::Separator();
 
+    if (ImGui::MenuItem("Return to Menu"))
+      nextScene = true;
+      
     if (ImGui::MenuItem("Exit"))
       app.done = true;
 

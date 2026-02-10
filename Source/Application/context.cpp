@@ -4,11 +4,17 @@
 void LoadSounds()
 {
   Application& app = Application::GetInstance();
+
+  /* Audio Asset Loading */
   app.AddSound("pixel", "Resources/Sound/pixel.ogg");
   app.AddSound("delete", "Resources/Sound/delete.ogg");
   app.AddSound("wood", "Resources/Sound/wood.ogg");
   app.AddSound("fire", "Resources/Sound/fire.ogg");
   app.AddSound("water", "Resources/Sound/water.ogg");
+  app.AddSound("song_main_menu", "Resources/Sound/main_menu.ogg");
+
+  /* Image Asset Loading */
+  app.AddTexture("main_menu_background", "Resources/Images/main_menu_background.png");
 }
 
 void Inititialize() // Iniciar SDL y SDL_Image
