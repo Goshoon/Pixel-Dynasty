@@ -3,6 +3,7 @@
 MainMenu::MainMenu()
 {
     std::cout << "Welcome to Pixel Dynasty!\n";
+    Mix_HaltMusic(); // Stop any music from previous screen
     background = Application::GetInstance().GetTexture("main_menu_background");
     song = Application::GetInstance().GetSound("song_main_menu");
     Mix_PlayMusic(song, 0);
@@ -28,7 +29,7 @@ void MainMenu::UserInterface()
     ImGuiIO& io = ImGui::GetIO();
 
     // Window size
-    ImVec2 windowSize(500, 300);
+    ImVec2 windowSize(225, 160);
 
     // Center window on screen
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -52,7 +53,7 @@ void MainMenu::UserInterface()
     float windowHeight = actualWindowSize.y;
 
     // Calculate content height
-    float contentHeight = 80.0f + 40.0f + 40.0f; // title + 2 buttons
+    float contentHeight = 60.0f + 30.0f + 40.0f; // title + 2 buttons
     float topPadding = (windowHeight - contentHeight) * 0.5f;
 
     // Add vertical spacing to center
@@ -60,7 +61,7 @@ void MainMenu::UserInterface()
 
     // Title with larger font
     ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
-    ImGui::SetWindowFontScale(2.8f);
+    ImGui::SetWindowFontScale(1.5f);
     const char* text = "Pixel Dynasty!";
     ImVec2 textSize = ImGui::CalcTextSize(text);
     ImGui::SetCursorPosX((windowWidth - textSize.x) * 0.5f);

@@ -6,6 +6,7 @@ Sandbox::Sandbox()
   Application& app = Application::GetInstance(); // App Singleton Reference
 
 	std::cout << "Created Sandbox!\n";
+  Mix_HaltMusic(); // Stop any music from previous screen
   pixels.reserve(MAX_PIXELS);
   placeSound = Application::GetInstance().GetSound("pixel");
   deleteSound = Application::GetInstance().GetSound("delete");
@@ -214,7 +215,7 @@ void Sandbox::UserInterface()
 
     ImGui::Separator();
 
-    if (ImGui::MenuItem("Return to Menu"))
+    if (ImGui::MenuItem("Main menu"))
       nextScene = true;
       
     if (ImGui::MenuItem("Exit"))
@@ -316,6 +317,11 @@ void Sandbox::UserInterface()
 
     if (ImGui::Button("Ash"))
       currentMaterial = ASH;
+
+    ImGui::SeparatorText("Explosives");
+
+    if (ImGui::Button("Dynamite"))
+      currentMaterial = DYNAMITE;
 
     ImGui::SeparatorText("Details");
     ImGui::Text("Pixel ammount: ");

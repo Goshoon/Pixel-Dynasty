@@ -74,17 +74,13 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
       GasBehaviour(nearby);
 
       /* Other material reactions */
-      if (CheckCollision(nearby, 0, -1, WATER))
-      {
-        destroy = true;
-      }
-      if (CheckCollision(nearby, 0, 1, WATER))
+      if (CheckCollision(nearby, 0, -1, WATER) || CheckCollision(nearby, 0, 1, WATER))
       {
         destroy = true;
       }
 
-      /* Gas Lifetime */
-      if (lifetime > 300)
+      /* Gas Lifetime - fade out less frequently */
+      if (lifetime > 300 && lifetime % 2 == 0)
         color.alpha--;
 
       if (color.alpha < 100)
@@ -93,7 +89,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
     case STEAM:
       GasBehaviour(nearby);
 
-      if (lifetime > 100)
+      if (lifetime > 100 && lifetime % 2 == 0)
         color.alpha-=2;
 
       if (color.alpha < 100)
@@ -162,11 +158,13 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           color = GetMaterialColor(tmp, STEAM);
         }
 
-        /* Change alpha quickly */
-        static thread_local std::mt19937 gen(std::random_device{}());
-        std::uniform_int_distribution<> dist(100, 255);
-        int random_number = dist(gen);
-        color.alpha = random_number; 
+        /* Change alpha less frequently to reduce overhead */
+        if (lifetime % 3 == 0)
+        {
+          static thread_local std::mt19937 gen(std::random_device{}());
+          std::uniform_int_distribution<> dist(100, 255);
+          color.alpha = dist(gen);
+        } 
     }
     break;
 
@@ -193,9 +191,35 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
     }
 
     case DYNAMITE:
-    {
-      Gravity(nearby);
-      
+    {      
+      if (!ignited)
+      {
+        if (CheckCollision(nearby, 0, -1, FIRE) ||
+          CheckCollision(nearby, 0, 1, FIRE) ||
+          CheckCollision(nearby, -1, 0, FIRE) ||
+          CheckCollision(nearby, 1, 0, FIRE))
+        {
+          ignited = true;
+          fuseTimer = 60; // 1 second if 60fps
+          color.red = 255; // visual feedback
+        }
+      }
+      else
+      {
+        fuseTimer--;
+
+        // Blink effect
+        if (fuseTimer % 10 < 5)
+          color = {255, 0, 0, 255};
+        else
+          color = {200, 0, 0, 255};
+
+        if (fuseTimer <= 0)
+        {
+          Explode(nearby);
+          destroy = true;
+        }
+      }
       break;
     }
   }
@@ -236,6 +260,31 @@ void Pixel::Gravity(std::vector<Pixel*>& nearby)
       position.y++;
     }
   }
+}
+
+/* Explosive actions */
+void Pixel::Explode(std::vector<Pixel*>& nearby)
+{
+    int radius = 8;
+
+    for (auto& near : nearby)
+    {
+        int dx = near->position.x - position.x;
+        int dy = near->position.y - position.y;
+
+        if (dx*dx + dy*dy <= radius*radius)
+        {
+            near->destroy = true;
+
+            // Optional: turn some into fire
+            if (rand() % 3 == 0)
+            {
+                near->material = FIRE;
+                Color tmp;
+                near->color = GetMaterialColor(tmp, FIRE);
+            }
+        }
+    }
 }
 
 /* Collision checks */
