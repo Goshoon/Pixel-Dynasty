@@ -1,8 +1,5 @@
 <h1><b>Pixel Dinasty - Sandbox </b></h1>
         Small sandbox game made using C++ and SDL2, based in games lie "Powder" and "The Sandbox".
-        
-![screenshot2](https://github.com/user-attachments/assets/325a4e82-5498-417a-9bdb-c2d07144ae7e)
-![screenshot4](https://github.com/user-attachments/assets/f1e31ccc-350a-4e7a-86c3-621773c58afc)
 
 <b><h2> Features </h2></b>
         <ul>

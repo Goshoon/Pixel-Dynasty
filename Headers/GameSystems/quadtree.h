@@ -5,7 +5,7 @@
 #include "pixel.h"
 
 class Quadtree
-    {
+{
     static const int MAX_ENTITIES = 8;
     static const int MAX_LEVELS = 4;
 
