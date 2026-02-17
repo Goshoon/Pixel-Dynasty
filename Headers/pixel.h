@@ -62,7 +62,7 @@ public:
   bool CheckCollision(std::vector<Pixel*>& nearby, int xoffset, int yoffset, Material materialLookup);
 
   void Update(std::vector<Pixel*>& nearby);
-  void Draw();
+  void Draw(uint32_t* pixelBuffer, int bufferWidth);
 private:
   bool ignited = false;
   int fuseTimer = 1;

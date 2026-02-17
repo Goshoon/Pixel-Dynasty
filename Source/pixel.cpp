@@ -2,6 +2,12 @@
 #include "pixel.h"
 #include <iostream>
 
+std::mt19937& GlobalRNG()
+{
+    static std::mt19937 gen(std::random_device{}());
+    return gen;
+}
+
 Pixel::Pixel()
 {
   lifetime = 0;
@@ -131,10 +137,8 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         {
           if(!leftCol && !rightCol)
           {
-            static thread_local std::mt19937 gen(std::random_device{}());
             std::uniform_int_distribution<> dist(-1, 1);
-
-            int random_number = dist(gen);
+            int random_number = dist(GlobalRNG());
 
             if(random_number == 0 && position.x > 0)
             {
@@ -182,9 +186,8 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         /* Change alpha less frequently to reduce overhead */
         if (lifetime % 3 == 0)
         {
-          static thread_local std::mt19937 gen(std::random_device{}());
           std::uniform_int_distribution<> dist(100, 255);
-          color.alpha = dist(gen);
+          color.alpha = dist(GlobalRNG());
         } 
     }
     break;
@@ -250,17 +253,22 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
   position.y = Clamp(position.y, 0, worldBorder.y);
 }
 
-void Pixel::Draw()
+void Pixel::Draw(uint32_t* pixelBuffer, int bufferWidth)
 {
-  Application& app = Application::GetInstance();
   if (position.x < 0 || position.x > worldBorder.x || position.y < 0 || position.y > worldBorder.y)
   {
     std::cerr << "Warning: Pixel::Draw out-of-bounds pos(" << position.x << "," << position.y << ") material=" << static_cast<int>(material) << " destroying..." << "\n";
     destroy = true;
     return;
   }
-  SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
-  SDL_RenderDrawPoint(app.renderer, position.x, position.y);
+  
+  // Write directly to pixel buffer in RGBA8888 format
+  int index = position.y * bufferWidth + position.x;
+  if (index >= 0 && index < bufferWidth * (position.y + 1))
+  {
+    uint32_t rgba = (color.red << 24) | (color.green << 16) | (color.blue << 8) | color.alpha;
+    pixelBuffer[index] = rgba;
+  }
 }
 
 /* Gravity */
@@ -440,10 +448,8 @@ void Pixel::GasBehaviour(std::vector<Pixel*>& nearby)
 
     if (!leftCol && !rightCol)
     {
-      static thread_local std::mt19937 gen(std::random_device{}());
       std::uniform_int_distribution<> dist(-1, 1);
-
-      int random_number = dist(gen);
+      int random_number = dist(GlobalRNG());
 
       if(random_number == 0 && position.x > 0)
       {

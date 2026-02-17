@@ -24,7 +24,7 @@ public:
 	SDL_Renderer* renderer;
 	std::unordered_map<std::string, SDL_Texture*> images;
   std::unordered_map<std::string, Mix_Music*> sounds;
-
+  
 	bool done = false;
   bool kSpace = false;
 	bool mbLeft = false;
