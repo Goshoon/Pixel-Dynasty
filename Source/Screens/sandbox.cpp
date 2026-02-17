@@ -1,6 +1,5 @@
 #include "sandbox.h"
 #include <algorithm>
-#include <unordered_set>
 
 Sandbox::Sandbox()
 {
@@ -77,19 +76,7 @@ void Sandbox::Update()
       {
         int half = brushSize / 2;
         
-        // Query entire brush area once instead of per-pixel
-        SDL_Rect brushArea = { app.mPosition.x - half, app.mPosition.y - half, brushSize, brushSize };
-        std::vector<Pixel*> nearby;
-        quadtree.Retrieve(nearby, brushArea);
-
-        // Build a hash set of occupied positions for O(1) lookups
-        std::unordered_set<uint32_t> occupied;
-        for (auto& near : nearby)
-        {
-          occupied.insert((uint32_t)(near->position.y * WINDOW_WIDTH + near->position.x));
-        }
-
-        // Loop over brush area with fast collision detection
+        // Loop over brush area
         for (int dx = -half; dx <= half; dx++)
         {
             for (int dy = -half; dy <= half; dy++)
@@ -97,8 +84,22 @@ void Sandbox::Update()
                 int px = app.mPosition.x + dx;
                 int py = app.mPosition.y + dy;
 
-                uint32_t posHash = (uint32_t)(py * WINDOW_WIDTH + px);
-                if (occupied.find(posHash) == occupied.end())
+                // Collision check with quadtree
+                bool canPlace = true;
+                std::vector<Pixel*> nearby;
+                SDL_Rect posRect = { px, py, 1, 1 };
+                quadtree.Retrieve(nearby, posRect);
+
+                for (auto& near : nearby)
+                {
+                    if (near->position.x == px && near->position.y == py)
+                    {
+                        canPlace = false;
+                        break;
+                    }
+                }
+
+                if (canPlace)
                 {
                     /* Prevent overfilling the world */
                     if (pixels.size() >= MAX_PIXELS)
@@ -173,9 +174,11 @@ void Sandbox::Render()
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw(pixelDraw, WINDOW_WIDTH);
 
+  SDL_Rect outputToScreen = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+
   /* Update texture with pixel buffer */
   SDL_UpdateTexture(pixelTexture, nullptr, pixelDraw, WINDOW_WIDTH * sizeof(uint32_t));
-  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, nullptr);
+  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, &outputToScreen);
 
   /* Draw brush! */
   SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);

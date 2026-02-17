@@ -9,15 +9,8 @@ int main(int argc, char* argv[])
   	std::unique_ptr<Screen> currentScreen = std::make_unique<MainMenu>();
   	Application& app = Application::GetInstance();
 
-	const int TARGET_FPS = 60;
-	const int FRAME_TIME_MS = 1000 / TARGET_FPS;
-	uint32_t frameStart = 0;
-	uint32_t frameTime = 0;
-
 	while(!app.done)
 	{
-		frameStart = SDL_GetTicks();
-
 		app.Input(); // User inputs
 
 		/* Handle scene swapping */
@@ -44,13 +37,6 @@ int main(int argc, char* argv[])
 		app.Display(); 					// Show interfaces and update frame
 		currentScreen->Render(); 		// Render elements on the scene
 		app.DrawEverything(); 			// Refresh window and clear renderer
-
-		// Frame rate limiting
-		frameTime = SDL_GetTicks() - frameStart;
-		if (frameTime < FRAME_TIME_MS)
-		{
-			SDL_Delay(FRAME_TIME_MS - frameTime);
-		}
 	}
 
 	Quit(); // Close all dependencies and free memory

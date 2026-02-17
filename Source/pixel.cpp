@@ -255,20 +255,22 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
 void Pixel::Draw(uint32_t* pixelBuffer, int bufferWidth)
 {
+  Application& app = Application::GetInstance();
   if (position.x < 0 || position.x > worldBorder.x || position.y < 0 || position.y > worldBorder.y)
   {
     std::cerr << "Warning: Pixel::Draw out-of-bounds pos(" << position.x << "," << position.y << ") material=" << static_cast<int>(material) << " destroying..." << "\n";
     destroy = true;
     return;
   }
-  
-  // Write directly to pixel buffer in RGBA8888 format
+
   int index = position.y * bufferWidth + position.x;
-  if (index >= 0 && index < bufferWidth * (position.y + 1))
-  {
-    uint32_t rgba = (color.red << 24) | (color.green << 16) | (color.blue << 8) | color.alpha;
-    pixelBuffer[index] = rgba;
-  }
+  uint32_t rgba = (color.red << 24) | (color.green << 16) | (color.blue << 8) | color.alpha;
+  pixelBuffer[index] = rgba;
+  
+  /*
+  SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
+  SDL_RenderDrawPoint(app.renderer, position.x, position.y);
+  */
 }
 
 /* Gravity */
