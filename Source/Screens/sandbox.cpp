@@ -19,6 +19,10 @@ Sandbox::Sandbox()
                                     SDL_TEXTUREACCESS_STREAMING,
                                     WINDOW_WIDTH, WINDOW_HEIGHT
                                   );
+
+  Uint32 formatEnum;
+  SDL_QueryTexture(pixelTexture, &formatEnum, nullptr, nullptr, nullptr);
+  app.gPixelFormat = SDL_AllocFormat(formatEnum);
 }
 
 Sandbox::~Sandbox()
@@ -168,7 +172,13 @@ void Sandbox::Update()
 void Sandbox::Render()
 {
   Application& app = Application::GetInstance(); // App Singleton Reference
-  std::fill_n(pixelDraw, WINDOW_WIDTH * WINDOW_HEIGHT, app.backgroundColor.GetColor());
+  uint32_t bg = SDL_MapRGBA(app.gPixelFormat,
+    app.backgroundColor.red,
+    app.backgroundColor.green,
+    app.backgroundColor.blue,
+    app.backgroundColor.alpha
+  );
+  std::fill_n(pixelDraw, WINDOW_WIDTH * WINDOW_HEIGHT, bg);
 
   /* Draw all "pixel" materials directly to texture buffer */
   for(int i = 0; i < pixels.size(); i++)

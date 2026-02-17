@@ -72,6 +72,8 @@ Application::Application()
 
 Application::~Application()
 {
+	SDL_FreeFormat(gPixelFormat);
+	
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 

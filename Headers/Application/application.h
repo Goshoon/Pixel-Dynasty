@@ -15,7 +15,7 @@
 #define WINDOW_WIDTH 	1280
 #define WINDOW_HEIGHT 720
 #define WINDOW_NAME "Pixel Dynasty : Sand Simulation!"
-#define RENDER_SCALE 16.0f
+#define RENDER_SCALE 12.0f
 
 class Application
 {
@@ -57,6 +57,8 @@ public:
 	void DrawRectangle(int x, int y, int width, int height, SDL_Color color);
 	void RenderImage( SDL_Texture* image, int x, int y );
 	void RenderImage( SDL_Texture* image, int x, int y, int w, int h );
+
+	SDL_PixelFormat* gPixelFormat = nullptr;
 private:
   Application();
 	~Application();

@@ -266,11 +266,6 @@ void Pixel::Draw(uint32_t* pixelBuffer, int bufferWidth)
   int index = position.y * bufferWidth + position.x;
   uint32_t rgba = (color.red << 24) | (color.green << 16) | (color.blue << 8) | color.alpha;
   pixelBuffer[index] = rgba;
-  
-  /*
-  SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
-  SDL_RenderDrawPoint(app.renderer, position.x, position.y);
-  */
 }
 
 /* Gravity */
