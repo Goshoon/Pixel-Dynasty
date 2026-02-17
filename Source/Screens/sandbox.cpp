@@ -170,7 +170,7 @@ void Sandbox::Render()
   Application& app = Application::GetInstance(); // App Singleton Reference
   std::fill_n(pixelDraw, WINDOW_WIDTH * WINDOW_HEIGHT, app.backgroundColor.GetColor());
 
-  /* Draw all "pixel" classes (materials) directly to texture buffer */
+  /* Draw all "pixel" materials directly to texture buffer */
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw(pixelDraw, WINDOW_WIDTH);
 
@@ -190,7 +190,7 @@ void Sandbox::Render()
     {
       if (dx*dx + dy*dy <= half*half) // inside circle
       {
-        SDL_RenderDrawPoint(app.renderer, app.mPosition.x, app.mPosition.y);
+        SDL_RenderDrawPoint(app.renderer, app.mPosition.x +dx, app.mPosition.y +dy);
       }
     }
   }
