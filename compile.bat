@@ -32,8 +32,9 @@ for %%f in (%SOURCES%) do (
     )
 )
 
-:: Conectar todos los archivos al ejecutable
-g++ %OBJECTS% -L %DEFAULT_SDL2%/lib -o ./Bin/%APPNAME%.exe resources.res -static-libgcc -static-libstdc++ -lmingw32 -Wpedantic -Wmaybe-uninitialized -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -mwindows
+:: -mwindows
+:: Linking files
+g++ %OBJECTS% -L %DEFAULT_SDL2%/lib -o ./Bin/%APPNAME%.exe resources.res -static-libgcc -static-libstdc++ -lmingw32 -Wpedantic -Wmaybe-uninitialized -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
  if errorlevel 1 (
     echo Linker error compiling %%f.
     pause

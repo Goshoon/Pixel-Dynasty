@@ -11,16 +11,31 @@ Pixel::Pixel()
   worldBorder.y = WINDOW_HEIGHT / RENDER_SCALE - 1;
 }
 
-Pixel::Pixel(int x, int y, Color col)
+Pixel::Pixel(int x, int y, Color col, Material mat)
 {
   lifetime = 0;
   position.x = x;
   position.y = y;
   position.w = 1;
   position.h = 1;
+  material = mat;
   color = col;
-  worldBorder.x = WINDOW_WIDTH / RENDER_SCALE;
+  worldBorder.x = WINDOW_WIDTH / RENDER_SCALE ;
   worldBorder.y = WINDOW_HEIGHT / RENDER_SCALE - 1;
+}
+
+Pixel::Pixel(const Pixel& other)
+{
+  position     = other.position;
+  color        = other.color;
+  material     = other.material;
+  lifetime     = other.lifetime;
+  destroy      = other.destroy;
+  ignited      = other.ignited;
+  fuseTimer    = other.fuseTimer;
+  worldBorder  = other.worldBorder;
+  material     = other.material;
+  std::cout << "Copied pixels\n";
 }
 
 void Pixel::Update(std::vector<Pixel*>& nearby)
@@ -28,11 +43,15 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
   if (material != STATIC && CheckCollision(nearby, 0, 0))
     Unstuck(nearby, 3);
 
+  
   if (position.x < -1000 || position.x > worldBorder.x + 1000 || position.y < -1000 || position.y > worldBorder.y + 1000)
   {
+    /*
     std::cerr << "Pixel::Update abnormal pos (" << position.x << "," << position.y << ") resetting to bounds\n";
     position.x = Clamp(position.x, 0, worldBorder.x);
     position.y = Clamp(position.y, 0, worldBorder.y);
+    */
+    destroy = true;
   }
 
   /* Particle behaviours */
@@ -43,8 +62,10 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
     case STONE:
     case DYNAMIC:
+    {
       Gravity(nearby);
       break;
+    }
 
     case ASH:
       Gravity(nearby);
@@ -234,7 +255,8 @@ void Pixel::Draw()
   Application& app = Application::GetInstance();
   if (position.x < 0 || position.x > worldBorder.x || position.y < 0 || position.y > worldBorder.y)
   {
-    std::cerr << "Warning: Pixel::Draw out-of-bounds pos(" << position.x << "," << position.y << ") material=" << static_cast<int>(material) << "\n";
+    std::cerr << "Warning: Pixel::Draw out-of-bounds pos(" << position.x << "," << position.y << ") material=" << static_cast<int>(material) << " destroying..." << "\n";
+    destroy = true;
     return;
   }
   SDL_SetRenderDrawColor(app.renderer, color.red, color.green, color.blue, color.alpha);
@@ -394,7 +416,7 @@ void Pixel::Unstuck(std::vector<Pixel*>& nearby, int limit)
       }
         
       //Bottom Left
-      if(!CheckCollision(nearby, -i, -i))
+      if(!CheckCollision(nearby, -i, i))
       {
         position.x-=i;
         position.y+=i;
@@ -444,12 +466,12 @@ void Pixel::GasBehaviour(std::vector<Pixel*>& nearby)
     {
       bool leftBellowCol = CheckCollision(nearby, -1, 1);
       bool rightBellowCol = CheckCollision(nearby, 1, 1);
-      if (leftBellowCol)
+      if (!leftBellowCol)
       {
         position.x--;
         position.y++;
       }
-      else if (rightBellowCol)
+      else if (!rightBellowCol)
       {
         position.x++;
         position.y++;

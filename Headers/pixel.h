@@ -17,7 +17,8 @@ class Pixel
 {
 public:
   Pixel();
-  Pixel(int x, int y, Color col);
+  Pixel(int x, int y, Color col, Material mat);
+  Pixel(const Pixel& pixel);
   
   Material material = DYNAMIC;
   SDL_Rect position;
@@ -27,16 +28,16 @@ public:
 
   void save(std::ostream& out) const
   {
-        out << static_cast<int>(material) << " "
-            << position.x << " "
-            << position.y << " "
-            << position.w << " "
-            << position.h << " "
-            << color.red << " "
-            << color.green << " "
-            << color.blue << " "
-            << color.alpha << " "
-            << moved << "\n";
+    out << static_cast<int>(material) << " "
+        << position.x << " "
+        << position.y << " "
+        << position.w << " "
+        << position.h << " "
+        << color.red << " "
+        << color.green << " "
+        << color.blue << " "
+        << color.alpha << " "
+        << moved << "\n";
   }
 
   void load(std::istream& in)

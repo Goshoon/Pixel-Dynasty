@@ -46,29 +46,24 @@ void Sandbox::Update()
   for (auto& pix : pixels)
     quadtree.Insert(&pix);
 
-  /* Update every Pixel (do NOT erase while quadtree holds pointers) */
-  for (auto& pix : pixels)
+  /* Mark pixels to Remove destroyed pixels after updates to avoid invalidating pointers and rebuild quadtree */
+  destroyQueue.clear();
+  for (int i = 0; i < pixels.size(); i++)
   {
+    auto& pix = pixels[i];
+
     std::vector<Pixel*> nearby;
     SDL_Rect area = pix.position;
     area.x = std::max(worldBounds.x, area.x - 1);
     area.y = std::max(worldBounds.y, area.y - 1);
-    area.w = area.w + 2;
-    area.h = area.h + 2;
+    area.w += 2;
+    area.h += 2;
+
     quadtree.Retrieve(nearby, area);
     pix.Update(nearby);
-  }
 
-  /* Remove destroyed pixels after updates to avoid invalidating pointers and rebuild quadtree */
-  {
-    size_t before = pixels.size();
-    pixels.erase(std::remove_if(pixels.begin(), pixels.end(), [](const Pixel& p){ return p.destroy; }), pixels.end());
-    size_t after = pixels.size();
-    if (before != after) std::cout << "Removed " << (before - after) << " destroyed pixels\n";
-
-    quadtree.Clear();
-    for (auto& pix : pixels)
-      quadtree.Insert(&pix);
+    if (pix.destroy)
+        destroyQueue.push_back(i);
   }
 
   /* Check if in SDL2 Context */
@@ -77,8 +72,8 @@ void Sandbox::Update()
     /* Create Pixels */
     if (app.mbLeft && mbCooldown < 1)
     {
-    if (SDL_PointInRect(&app.mPosition, &quadtree.bounds))
-    {
+      if (SDL_PointInRect(&app.mPosition, &quadtree.bounds))
+      {
         int half = brushSize / 2;
         
         // Loop over brush area
@@ -112,12 +107,8 @@ void Sandbox::Update()
                       std::cout << "Reached pixel limit (" << MAX_PIXELS << "), skipping placement\n";
                       continue;
                     }
-
-                    Pixel pixel(px, py, brushColor);
-                    pixel.color = GetMaterialColor(brushColor, currentMaterial);
-                    pixel.material = currentMaterial;
-
-                    pixels.emplace_back(pixel);
+                    
+                    pixels.emplace_back(px, py, GetMaterialColor(brushColor, currentMaterial), currentMaterial);
                 }
             }
         }
@@ -165,6 +156,11 @@ void Sandbox::Update()
     }
   }
 
+  for (int i = destroyQueue.size() - 1; i >= 0; --i)
+  {
+    pixels.erase(pixels.begin() + destroyQueue[i]);
+  }
+
   /* Create UI Interactions */
   if (app.hideInterface) UserInterface();
 }
@@ -177,14 +173,15 @@ void Sandbox::Render()
   /* Draw brush! */
   SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);
   int half = brushSize / 2; // so it grows around the center point
+  
   for (int dx = -half; dx <= half; dx++)
   {
     for (int dy = -half; dy <= half; dy++)
     {
-        if (dx*dx + dy*dy <= half*half) // inside circle
-        {
-            SDL_RenderDrawPoint(app.renderer, app.mPosition.x + dx, app.mPosition.y + dy);
-        }
+      if (dx*dx + dy*dy <= half*half) // inside circle
+      {
+        SDL_RenderDrawPoint(app.renderer, app.mPosition.x + dx, app.mPosition.y + dy);
+      }
     }
   }
   

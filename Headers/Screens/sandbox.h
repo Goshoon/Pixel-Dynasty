@@ -25,6 +25,7 @@ public:
 private:
   void UserInterface();
   
+  std::vector<int> destroyQueue;
   Material currentMaterial = DYNAMIC;
   Mix_Music* placeSound;
   Mix_Music* deleteSound;
