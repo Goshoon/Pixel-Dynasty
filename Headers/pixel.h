@@ -25,6 +25,7 @@ public:
   Color color;
   bool moved = true;
   bool destroy = false;
+  bool ignited = false;
 
   void save(std::ostream& out) const
   {
@@ -64,13 +65,13 @@ public:
   void Update(std::vector<Pixel*>& nearby);
   void Draw(uint32_t* pixelBuffer, int bufferWidth);
 private:
-  bool ignited = false;
   int fuseTimer = 1;
   short lifetime;
   SDL_Point lastPosition;
   SDL_Point worldBorder;
+
   void Gravity(std::vector<Pixel*>& nearby);
   void Unstuck(std::vector<Pixel*>& nearby, int limit);
   void GasBehaviour(std::vector<Pixel*>& nearby);
-  void Explode(std::vector<Pixel*>& nearby);
+  void Explode(std::vector<Pixel*>& nearby, int radius);
 };

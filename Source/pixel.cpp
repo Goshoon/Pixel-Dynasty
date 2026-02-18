@@ -48,17 +48,9 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 {
   if (material != STATIC && CheckCollision(nearby, 0, 0))
     Unstuck(nearby, 3);
-
   
   if (position.x < -1000 || position.x > worldBorder.x + 1000 || position.y < -1000 || position.y > worldBorder.y + 1000)
-  {
-    /*
-    std::cerr << "Pixel::Update abnormal pos (" << position.x << "," << position.y << ") resetting to bounds\n";
-    position.x = Clamp(position.x, 0, worldBorder.x);
-    position.y = Clamp(position.y, 0, worldBorder.y);
-    */
     destroy = true;
-  }
 
   /* Particle behaviours */
   switch(material)
@@ -74,14 +66,17 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
     }
 
     case ASH:
+    {
       Gravity(nearby);
 
       lifetime++;
       if (lifetime > 900)
         destroy = true;
       break;
+    }
 
     case WOOD:
+    {
       /* Other material reactions */
       if (CheckCollision(nearby, 0, -1, FIRE))
       {
@@ -96,8 +91,10 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
         color = GetMaterialColor(tmp, ASH);
       }
       break;
+    }
 
     case FIRE:
+    {
       GasBehaviour(nearby);
 
       /* Other material reactions */
@@ -112,8 +109,11 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
       if (color.alpha < 100)
         destroy = true;
-    break;
+      break;
+    }
+
     case STEAM:
+    {
       GasBehaviour(nearby);
 
       if (lifetime > 100 && lifetime % 2 == 0)
@@ -121,7 +121,9 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
       if (color.alpha < 100)
         destroy = true;
-    break;
+
+      break;
+    }
 
     case MILK:
     case WATER:
@@ -189,8 +191,8 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           std::uniform_int_distribution<> dist(100, 255);
           color.alpha = dist(GlobalRNG());
         } 
+      break;
     }
-    break;
 
     case DIRT:
     {
@@ -215,7 +217,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
     }
 
     case DYNAMITE:
-    {      
+    {
       if (!ignited)
       {
         if (CheckCollision(nearby, 0, -1, FIRE) ||
@@ -224,7 +226,7 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
           CheckCollision(nearby, 1, 0, FIRE))
         {
           ignited = true;
-          fuseTimer = 60; // 1 second if 60fps
+          fuseTimer = 60; // 1 second
           color.red = 255; // visual feedback
         }
       }
@@ -240,9 +242,20 @@ void Pixel::Update(std::vector<Pixel*>& nearby)
 
         if (fuseTimer <= 0)
         {
-          Explode(nearby);
+          Explode(nearby, 14);
           destroy = true;
         }
+      }
+      break;
+    }
+
+    case NITROGLYCERIN:
+    {
+      Gravity(nearby);
+      if (CheckCollision(nearby, 0, 1) && !CheckCollision(nearby, 0, 1, NITROGLYCERIN))
+      {
+        Explode(nearby, 24);
+        ignited = true;
       }
       break;
     }
@@ -290,16 +303,14 @@ void Pixel::Gravity(std::vector<Pixel*>& nearby)
 }
 
 /* Explosive actions */
-void Pixel::Explode(std::vector<Pixel*>& nearby)
+void Pixel::Explode(std::vector<Pixel*>& nearby, int radius)
 {
-    int radius = 8;
-
     for (auto& near : nearby)
     {
         int dx = near->position.x - position.x;
         int dy = near->position.y - position.y;
 
-        if (dx*dx + dy*dy <= radius*radius)
+        if (dx * dx + dy * dy <= radius * radius)
         {
             near->destroy = true;
 

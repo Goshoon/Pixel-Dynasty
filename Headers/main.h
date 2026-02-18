@@ -2,6 +2,7 @@
 #include <iostream>
 #include <time.h>
 #include <cmath>
+#include <thread>
 #include "entity.h"
 #include "application.h"
 #include "context.h"

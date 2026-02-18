@@ -2,3 +2,4 @@
   - Water reacts to objects on top of it, materials should get to the bottom
   - Different kinds of brushes
   - Brush flow
+  - Swap collision checking from Quadtree to be based on a grid, lookups will be easier and faster

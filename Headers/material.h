@@ -17,7 +17,8 @@ enum Material
   WOOD,
   STEAM,
   ASH,
-  DYNAMITE
+  DYNAMITE,
+  NITROGLYCERIN
 };
 
 Color GetMaterialColor(Color& brushColor, Material behaviourType);

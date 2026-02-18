@@ -13,6 +13,7 @@ Sandbox::Sandbox()
   woodSound = Application::GetInstance().GetSound("wood");
   fireSound = Application::GetInstance().GetSound("fire");
   waterSound = Application::GetInstance().GetSound("water");
+  explosionSound = Application::GetInstance().GetSound("explosion");
 
   pixelTexture = SDL_CreateTexture(app.renderer,
                                     SDL_PIXELFORMAT_RGBA8888,
@@ -119,18 +120,20 @@ void Sandbox::Update()
 
         switch(currentMaterial) // Play once per brush stroke
         {
-        default:
-          Mix_PlayMusic(placeSound, 1);
-          break;
-        case WOOD:
-          Mix_PlayMusic(woodSound, 1);
-          break;
-        case FIRE:
-          Mix_PlayMusic(fireSound, 1);
-          break;
-        case WATER:
-          Mix_PlayMusic(waterSound, 1);
-          break;
+          default:
+            Mix_PlayMusic(placeSound, 1);
+            break;
+          case WOOD:
+            Mix_PlayMusic(woodSound, 1);
+            break;
+          case FIRE:
+            Mix_PlayMusic(fireSound, 1);
+            break;
+          case WATER:
+          {
+            Mix_PlayMusic(waterSound, 1);
+            break;
+          }
         }
         
         if (currentMaterial == FIRE)
@@ -145,7 +148,8 @@ void Sandbox::Update()
       int half = brushSize / 2;
       int erasedCount = 0;
 
-      auto new_end = std::remove_if(pixels.begin(), pixels.end(), [&](const Pixel& p){
+      auto new_end = std::remove_if(pixels.begin(), pixels.end(), [&](const Pixel& p)
+      {
         int dx = p.position.x - app.mPosition.x;
         int dy = p.position.y - app.mPosition.y;
         bool inside = (dx >= -half && dx <= half && dy >= -half && dy <= half);
@@ -154,14 +158,19 @@ void Sandbox::Update()
       });
       pixels.erase(new_end, pixels.end());
 
-      if (erasedCount > 0) std::cout << "Erased " << erasedCount << " pixels\n";
-
-      Mix_PlayMusic(deleteSound, 1); // Play once per stroke
+      if (erasedCount > 0)
+      {
+        std::cout << "Erased " << erasedCount << " pixels\n";
+        Mix_PlayMusic(deleteSound, 1); // Play once per stroke
+      } 
     }
   }
 
   for (int i = destroyQueue.size() - 1; i >= 0; --i)
   {
+    if (pixels.at(destroyQueue[i]).ignited) // check if exploded
+      Mix_PlayMusic(explosionSound, 1);
+
     pixels.erase(pixels.begin() + destroyQueue[i]);
   }
 
@@ -335,6 +344,9 @@ void Sandbox::UserInterface()
 
     if (ImGui::Button("Dynamite"))
       currentMaterial = DYNAMITE;
+
+    if (ImGui::Button("Nitroglycerin"))
+      currentMaterial = NITROGLYCERIN;
 
     ImGui::SeparatorText("Details");
     ImGui::Text("Pixel ammount: ");

@@ -15,5 +15,6 @@ Color GetMaterialColor(Color& brushColor, Material material)
         case STEAM:   return Color{ 155, 155, 155, 125 };
         case ASH:     return Color{ 100, 100, 100, 255 };
         case DYNAMITE:return Color{ 225, 35, 35, 255 };
+        case NITROGLYCERIN: return Color {245, 232, 150, 255 };
   }
 }

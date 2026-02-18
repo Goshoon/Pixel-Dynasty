@@ -33,6 +33,7 @@ public:
   bool scrolldown = false;
   bool hideInterface = true;
   SDL_Point mPosition; // Relative mouse Position (x, y)
+  SDL_PixelFormat* gPixelFormat = nullptr;
 
   static Application& GetInstance()
 	{
@@ -57,8 +58,6 @@ public:
 	void DrawRectangle(int x, int y, int width, int height, SDL_Color color);
 	void RenderImage( SDL_Texture* image, int x, int y );
 	void RenderImage( SDL_Texture* image, int x, int y, int w, int h );
-
-	SDL_PixelFormat* gPixelFormat = nullptr;
 private:
   Application();
 	~Application();

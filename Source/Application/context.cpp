@@ -11,6 +11,7 @@ void LoadSounds()
   app.AddSound("wood", "Resources/Sound/wood.ogg");
   app.AddSound("fire", "Resources/Sound/fire.ogg");
   app.AddSound("water", "Resources/Sound/water.ogg");
+  app.AddSound("explosion", "Resources/Sound/explosion.ogg");
   app.AddSound("song_main_menu", "Resources/Sound/main_menu.ogg");
 
   /* Image Asset Loading */
