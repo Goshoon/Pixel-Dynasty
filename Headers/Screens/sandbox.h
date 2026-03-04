@@ -39,10 +39,10 @@ private:
   Mix_Music* fireSound;
   Mix_Music* waterSound;
   Mix_Music* explosionSound;
+  SDL_Texture* pixelTexture;
   std::vector<int> destroyQueue;
   Material currentMaterial = DYNAMIC;
   
-  SDL_Texture* pixelTexture;
   uint32_t* pixelDraw = new uint32_t[WINDOW_WIDTH * WINDOW_HEIGHT];
   SDL_Rect worldBounds = { 0, 0, WINDOW_WIDTH/(int)RENDER_SCALE, WINDOW_HEIGHT/(int)RENDER_SCALE };
   ImVec4 color = ImVec4( 1.0f, 1.0f, 1.0f, 1.0f );            // ImGui Color wheel data (has to be casted into RGB)

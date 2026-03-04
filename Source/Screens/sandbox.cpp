@@ -193,11 +193,13 @@ void Sandbox::Render()
   for(int i = 0; i < pixels.size(); i++)
     pixels.at(i).Draw(pixelDraw, WINDOW_WIDTH);
 
-  SDL_Rect outputToScreen = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+  SDL_Rect levelOutputToScreen = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+  SDL_Rect particleOutputToScreen = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
 
   /* Update texture with pixel buffer */
   SDL_UpdateTexture(pixelTexture, nullptr, pixelDraw, WINDOW_WIDTH * sizeof(uint32_t));
-  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, &outputToScreen);
+  SDL_RenderCopy(app.renderer, pixelTexture, nullptr, &levelOutputToScreen);
+  //SDL_RenderCopy(app.renderer, particleTexture, nullptr, &particleOutputToScreen);
 
   /* Draw brush! */
   SDL_SetRenderDrawColor(app.renderer, brushColor.red, brushColor.green, brushColor.blue, 100);

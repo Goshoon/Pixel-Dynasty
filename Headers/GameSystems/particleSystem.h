@@ -14,6 +14,8 @@ struct Particle
 class ParticleSystem
 {
 public:
+	//SDL_Texture* particleTexture;
+
 	void Update();
 	void Draw();
 	void Emit(float x, float y, int count, Color col, float vx, float vy);
